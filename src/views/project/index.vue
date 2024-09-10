@@ -71,11 +71,14 @@
       <el-table-column label="发布应用" align="center" prop="publishApp" :show-overflow-tooltip="true"/>
       <el-table-column label="简要描述" align="center" prop="simpleDesc" :show-overflow-tooltip="true"/>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
-      <el-table-column label="更新时间" width="180" align="center" prop="updateTime" :show-overflow-tooltip="true"/>
+      <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
+                       :formatter="(row) => parseTime(row.updateTime)"
+                       :show-overflow-tooltip="true"/>
       <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建时间" width="180" align="center" prop="createTime" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
+                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
       <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-tooltip content="修改" placement="top">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
@@ -98,42 +101,48 @@
     />
 
     <!-- 添加或修改项目对话框 -->
-    <el-dialog :title="title" v-model="open" width="820px" append-to-body>
-      <el-form ref="projectRef" :model="form" :rules="rules" label-width="120px">
+    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
+      <el-form ref="projectRef" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="24">
             <el-form-item label="项目名称" prop="projectName">
-              <el-input v-model="form.projectName" placeholder="请输入项目名称"/>
+              <el-input v-model="form.projectName" placeholder="请输入项目名称" maxlength="10" show-word-limit
+                        clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="负责人" prop="responsibleName">
-              <el-input v-model="form.responsibleName" placeholder="请输入负责人姓名"/>
+              <el-input v-model="form.responsibleName" placeholder="请输入负责人姓名" maxlength="10" show-word-limit
+                        clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="开发人员" prop="devUser">
-              <el-input v-model="form.devUser" placeholder="请输入开发人员姓名"/>
+              <el-input v-model="form.devUser" placeholder="请输入开发人员姓名" maxlength="10" show-word-limit
+                        clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="测试人员" prop="testUser">
-              <el-input v-model="form.testUser" placeholder="请输入测试人员姓名"/>
+              <el-input v-model="form.testUser" placeholder="请输入测试人员姓名" maxlength="10" show-word-limit
+                        clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="发布应用" prop="publishApp">
-              <el-input v-model="form.publishApp" placeholder="请输入发布应用名称"/>
+              <el-input v-model="form.publishApp" placeholder="请输入发布应用名称" maxlength="10" show-word-limit
+                        clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="简要描述" prop="simpleDesc">
-              <el-input v-model="form.simpleDesc" placeholder="请输入简要描述"/>
+              <el-input v-model="form.simpleDesc" placeholder="请输入简要描述" maxlength="100" show-word-limit type="textarea"/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="备注" prop="remark">
-              <el-input v-model="form.remark" placeholder="请输入备注"/>
+              <el-input v-model="form.remark" placeholder="请输入备注" maxlength="100" show-word-limit
+                        type="textarea"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -176,11 +185,31 @@ const data = reactive({
     publishApp: undefined
   },
   rules: {
-    projectName: [{required: true, message: "项目名称不能为空", trigger: "blur"}],
-    responsibleName: [{required: true, message: "负责人不能为空", trigger: "blur"}],
-    testUser: [{required: true, message: "测试人员不能为空", trigger: "blur"}],
-    devUser: [{required: true, message: "开发人员不能为空", trigger: "blur"}],
-    publishApp: [{required: true, message: "发布应用不能为空", trigger: "blur"}]
+    projectName: [{required: true, message: "项目名称不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "项目名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    responsibleName: [{required: true, message: "负责人不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "负责人名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    testUser: [{required: true, message: "测试人员不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "测试人员名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    devUser: [{required: true, message: "开发人员不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "开发人员名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    publishApp: [{required: true, message: "发布应用不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "发布应用名称不能超过10个字符",
+      trigger: "blur"
+    }]
   }
 });
 
