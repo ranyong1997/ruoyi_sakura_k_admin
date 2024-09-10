@@ -10,9 +10,9 @@
                @keyup.enter="handleQuery"
             />
          </el-form-item>
-         <el-form-item label="用户名称" prop="user_name">
+         <el-form-item label="用户名称" prop="userName">
             <el-input
-               v-model="queryParams.user_name"
+               v-model="queryParams.userName"
                placeholder="请输入用户名称"
                clearable
                style="width: 200px"
@@ -35,7 +35,7 @@
             </template>
          </el-table-column>
          <el-table-column label="会话编号" align="center" prop="tokenId" :show-overflow-tooltip="true" />
-         <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />
+         <el-table-column label="用户名" align="center" prop="userName" :show-overflow-tooltip="true" />
          <el-table-column label="所属部门" align="center" prop="deptName" :show-overflow-tooltip="true" />
          <el-table-column label="主机" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
          <el-table-column label="登录地点" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
@@ -58,9 +58,9 @@
 </template>
 
 <script setup name="Online">
-import { forceLogout, list as initData } from "@/api/monitor/online";
+import {forceLogout, list as initData} from "@/api/monitor/online";
 
-const { proxy } = getCurrentInstance();
+const {proxy} = getCurrentInstance();
 
 const onlineList = ref([]);
 const loading = ref(true);
@@ -70,7 +70,7 @@ const pageSize = ref(10);
 
 const queryParams = ref({
   ipaddr: undefined,
-  deptName: undefined
+  userName: undefined
 });
 
 /** 查询登录日志列表 */
@@ -82,24 +82,28 @@ function getList() {
     loading.value = false;
   });
 }
+
 /** 搜索按钮操作 */
 function handleQuery() {
   pageNum.value = 1;
   getList();
 }
+
 /** 重置按钮操作 */
 function resetQuery() {
   proxy.resetForm("queryRef");
   handleQuery();
 }
+
 /** 强退按钮操作 */
 function handleForceLogout(row) {
-    proxy.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户?').then(function () {
-  return forceLogout(row.tokenId);
+  proxy.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户?').then(function () {
+    return forceLogout(row.tokenId);
   }).then(() => {
     getList();
     proxy.$modal.msgSuccess("删除成功");
-  }).catch(() => {});
+  }).catch(() => {
+  });
 }
 
 getList();
