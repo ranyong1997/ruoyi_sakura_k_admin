@@ -124,10 +124,11 @@
               <el-select
                   v-model="form.robotType"
                   clearable
+                  filterable
                   placeholder="请选择机器人类型"
               >
                 <el-option
-                    v-for="item in options"
+                    v-for="item in select_bot"
                     :key="item.value"
                     :label="item.label"
                     :value="item.value"
@@ -188,7 +189,7 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const openView = ref(false);
-const options = [
+const select_bot = [
   {
     value: 'Wx_bot',
     label: '企业微信机器人',
@@ -323,9 +324,15 @@ function submitForm() {
 
 /** 测试连接按钮 */
 const testRobot = () => {
-  testRobotById(form.value.robotId).then(response => {
-    proxy.$modal.msgSuccess("测试成功");
-  });
+  proxy.$refs["RobotRef"].validate(valid => {
+    if (valid) {
+      if (form.value.robotId != undefined) {
+        testRobotById(form.value.robotId).then(response => {
+          proxy.$modal.msgSuccess("测试成功");
+        });
+      }
+    }
+  })
 };
 
 
