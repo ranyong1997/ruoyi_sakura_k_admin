@@ -275,14 +275,6 @@ function handleSelectionChange(selection) {
   multiple.value = !selection.length;
 }
 
-/** 机器人详细信息 */
-function handleView(row) {
-  getRobotById(row.robotId).then(response => {
-    form.value = response.data;
-    openView.value = true;
-  });
-}
-
 /** 新增按钮操作 */
 function handleAdd() {
   reset();

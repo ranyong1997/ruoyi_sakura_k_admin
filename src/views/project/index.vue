@@ -136,7 +136,8 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="简要描述" prop="simpleDesc">
-              <el-input v-model="form.simpleDesc" placeholder="请输入简要描述" maxlength="100" show-word-limit type="textarea"/>
+              <el-input v-model="form.simpleDesc" placeholder="请输入简要描述" maxlength="100" show-word-limit
+                        type="textarea"/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -263,14 +264,6 @@ function handleSelectionChange(selection) {
   ids.value = selection.map(item => item.projectId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-}
-
-/** 项目详细信息 */
-function handleView(row) {
-  getProjectById(row.projectId).then(response => {
-    form.value = response.data;
-    openView.value = true;
-  });
 }
 
 /** 新增按钮操作 */
