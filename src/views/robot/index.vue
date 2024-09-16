@@ -326,13 +326,15 @@ function submitForm() {
 const testRobot = () => {
   proxy.$refs["RobotRef"].validate(valid => {
     if (valid) {
-      if (form.value.robotId != undefined) {
+      if (form.value.robotId) {
         testRobotById(form.value.robotId).then(response => {
-          proxy.$modal.msgSuccess("测试成功");
-        });
+          proxy.$modal.msgSuccess("测试已发送");
+        })
+      } else {
+        proxy.$modal.msgWarning("请先保存机器人配置再进行测试");
       }
     }
-  })
+  });
 };
 
 
