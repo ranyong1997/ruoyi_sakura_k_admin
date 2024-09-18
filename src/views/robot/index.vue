@@ -253,7 +253,7 @@ function reset() {
     robotWebhook: undefined,
     remark: undefined
   };
-  proxy.resetForm("robotRef");
+  proxy.resetForm("RobotRef");
 }
 
 /** 搜索按钮操作 */
