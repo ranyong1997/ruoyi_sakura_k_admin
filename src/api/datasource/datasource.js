@@ -46,11 +46,11 @@ export function getDatasourceById(datasourceId) {
     })
 }
 
-// // 根据 ID 测试连接数据源
-// export function testDatasourceById(robotId) {
-//     return request({
-//         url: baseurl + '/' + robotId,
-//         method: 'post',
-//         data: robotId
-//     })
-// }
+// 根据 ID 测试连接数据源
+export function testDatasourceById(datasourceId) {
+    return request({
+        url: baseurl + '/' + datasourceId,
+        method: 'post',
+        data: datasourceId
+    })
+}

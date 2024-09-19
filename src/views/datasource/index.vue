@@ -144,8 +144,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="数据源密码" prop="datasourcePsw">
-              <el-input v-model="form.datasourcePsw" placeholder="请输入数据源密码" maxlength="255" show-word-limit
+            <el-form-item label="数据源密码" prop="datasourcePwd">
+              <el-input v-model="form.datasourcePwd" placeholder="请输入数据源密码" maxlength="255" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
@@ -169,12 +169,12 @@
 </template>
 
 <script setup name="DataSource">
-import {testRobotById} from "@/api/robot/robot";
 import {
   addDatasource,
   delDatasource,
   getDatasourceById,
   listDatasource,
+  testDatasourceById,
   updateDatasource
 } from "@/api/datasource/datasource";
 
@@ -206,7 +206,7 @@ const data = reactive({
     datasourceHost: undefined,
     datasourcePort: undefined,
     datasourceUser: undefined,
-    datasourcePsw: undefined,
+    datasourcePwd: undefined,
     datasourceType: undefined,
     remark: undefined
   },
@@ -222,7 +222,7 @@ const data = reactive({
       trigger: "blur"
     }],
     datasourcePort: [{required: true, message: "数据源端口不能为空", trigger: "blur"}, {
-      max:  10,
+      max: 10,
       message: "数据源端口不能超过10个字符",
       trigger: "blur"
     }],
@@ -231,7 +231,7 @@ const data = reactive({
       message: "数据源用户名不能超过64个字符",
       trigger: "blur"
     }],
-    datasourcePsw: [{required: true, message: "数据源密码不能为空", trigger: "blur"}, {
+    datasourcePwd: [{required: true, message: "数据源密码不能为空", trigger: "blur"}, {
       max: 255,
       message: "数据源密码不能超过255个字符",
       trigger: "blur"
@@ -265,7 +265,7 @@ function reset() {
     datasourceName: undefined,
     datasourceHost: undefined,
     datasourcePort: undefined,
-    datasourcePsw: undefined,
+    datasourcePwd: undefined,
     datasourceType: undefined,
     datasourceUser: undefined,
     remark: undefined
@@ -350,7 +350,7 @@ const testRobot = () => {
   proxy.$refs["DataSourceRef"].validate(valid => {
     if (valid) {
       if (form.value.datasourceId) {
-        testRobotById(form.value.datasourceId).then(response => {
+        testDatasourceById(form.value.datasourceId).then(response => {
           proxy.$modal.msgSuccess("测试已发送");
         })
       } else {
