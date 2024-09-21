@@ -144,10 +144,26 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="数据源密码" prop="datasourcePwd">
+            <el-form-item label="数据源密码" prop="datasourcePwd" v-if="form.datasourceId==null" :rules="[
+              {
+                required: true,
+                message: '数据源密码不能为空',
+                trigger: 'blur',
+              },
+               {
+                max: 255,
+                message: '数据源密码不能超过255个字符',
+                trigger: 'blur',
+              }
+            ]">
               <el-input v-model="form.datasourcePwd" placeholder="请输入数据源密码" maxlength="255" show-word-limit
                         clearable/>
             </el-form-item>
+            <el-form-item label="数据源密码" prop="datasourcePwd" v-else>
+              <el-input v-model="form.datasourcePwd" placeholder="请输入数据源密码" maxlength="255" show-word-limit
+                        clearable @change="changepwd"/>
+            </el-form-item>
+
           </el-col>
           <el-col :span="24">
             <el-form-item label="备注" prop="remark">
@@ -188,6 +204,7 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+const changePwd = ref(false)
 const select_bot = [
   {
     value: 'mysql',
@@ -231,11 +248,6 @@ const data = reactive({
       message: "数据源用户名不能超过64个字符",
       trigger: "blur"
     }],
-    datasourcePwd: [{required: true, message: "数据源密码不能为空", trigger: "blur"}, {
-      max: 255,
-      message: "数据源密码不能超过255个字符",
-      trigger: "blur"
-    }],
     datasourceType: [{required: true, message: "请选择数据源类型", trigger: "blur"}]
   }
 });
@@ -250,6 +262,11 @@ function getList() {
     total.value = response.total;
     loading.value = false;
   });
+}
+
+/** 如果修改密码 */
+function changepwd() {
+  changePwd.value = true;
 }
 
 /** 取消按钮 */
@@ -305,6 +322,7 @@ function handleUpdate(row) {
   const datasourceId = row.datasourceId || ids.value;
   getDatasourceById(datasourceId).then(response => {
     form.value = response.data;
+    changePwd.value = false;
     open.value = true;
     title.value = "修改数据源";
   });
@@ -314,8 +332,12 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["DataSourceRef"].validate(valid => {
     if (valid) {
+      let formdata = {...form.value};
       if (form.value.datasourceId != undefined) {
-        updateDatasource(form.value).then(response => {
+        if (!changePwd.value) {
+          delete formdata.datasourcePwd
+        }
+        updateDatasource(formdata).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
           getList();
@@ -351,28 +373,28 @@ const testRobot = () => {
     if (valid) {
       if (form.value.datasourceId) {
         testDatasourceById(form.value.datasourceId)
-          .then(response => {
-            const { status, message } = response.data;
-            if (status === 'success') {
-              proxy.$modal.msgSuccess(message);
-            } else {
-              proxy.$modal.msgError(message);
-            }
-          })
-          .catch(error => {
-            let errorMessage = "发生未知错误";
-            if (error.response) {
-              // 服务器响应了，但状态码不在 2xx 范围内
-              errorMessage = `服务器错误 (${error.response.status}): ${error.response.data.message || '未知错误'}`;
-            } else if (error.request) {
-              // 请求已经发出，但没有收到响应
-              errorMessage = "无法连接到服务器，请检查网络连接";
-            } else {
-              // 在设置请求时发生了一些错误
-              errorMessage = error.message;
-            }
-            proxy.$modal.msgError(errorMessage);
-          });
+            .then(response => {
+              const {status, message} = response.data;
+              if (status === 'success') {
+                proxy.$modal.msgSuccess(message);
+              } else {
+                proxy.$modal.msgError(message);
+              }
+            })
+            .catch(error => {
+              let errorMessage = "发生未知错误";
+              if (error.response) {
+                // 服务器响应了，但状态码不在 2xx 范围内
+                errorMessage = `服务器错误 (${error.response.status}): ${error.response.data.message || '未知错误'}`;
+              } else if (error.request) {
+                // 请求已经发出，但没有收到响应
+                errorMessage = "无法连接到服务器，请检查网络连接";
+              } else {
+                // 在设置请求时发生了一些错误
+                errorMessage = error.message;
+              }
+              proxy.$modal.msgError(errorMessage);
+            });
       } else {
         proxy.$modal.msgWarning("请先保存数据源配置再进行测试");
       }
@@ -386,7 +408,7 @@ const testRobot = () => {
 function handleExport() {
   proxy.download("", {
     ...queryParams.value,
-  }, `robot_${new Date().getTime()}.xlsx`);
+  }, `datasource_${new Date().getTime()}.xlsx`);
 }
 
 getList();
