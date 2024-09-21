@@ -350,12 +350,34 @@ const testRobot = () => {
   proxy.$refs["DataSourceRef"].validate(valid => {
     if (valid) {
       if (form.value.datasourceId) {
-        testDatasourceById(form.value.datasourceId).then(response => {
-          proxy.$modal.msgSuccess("测试已发送");
-        })
+        testDatasourceById(form.value.datasourceId)
+          .then(response => {
+            const { status, message } = response.data;
+            if (status === 'success') {
+              proxy.$modal.msgSuccess(message);
+            } else {
+              proxy.$modal.msgError(message);
+            }
+          })
+          .catch(error => {
+            let errorMessage = "发生未知错误";
+            if (error.response) {
+              // 服务器响应了，但状态码不在 2xx 范围内
+              errorMessage = `服务器错误 (${error.response.status}): ${error.response.data.message || '未知错误'}`;
+            } else if (error.request) {
+              // 请求已经发出，但没有收到响应
+              errorMessage = "无法连接到服务器，请检查网络连接";
+            } else {
+              // 在设置请求时发生了一些错误
+              errorMessage = error.message;
+            }
+            proxy.$modal.msgError(errorMessage);
+          });
       } else {
         proxy.$modal.msgWarning("请先保存数据源配置再进行测试");
       }
+    } else {
+      proxy.$modal.msgWarning("请填写完整的数据源信息");
     }
   });
 };
