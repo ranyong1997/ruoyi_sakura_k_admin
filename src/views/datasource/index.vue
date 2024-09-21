@@ -104,7 +104,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="数据源名称" prop="datasourceName">
-              <el-input v-model="form.datasourceName" placeholder="请输入数据源名称" maxlength="10" show-word-limit
+              <el-input v-model="form.datasourceName" placeholder="请输入数据源名称" maxlength="20" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
@@ -212,8 +212,8 @@ const data = reactive({
   },
   rules: {
     datasourceName: [{required: true, message: "数据源名称不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "数据源名称不能超过10个字符",
+      max: 20,
+      message: "数据源名称不能超过20个字符",
       trigger: "blur"
     }],
     datasourceHost: [{required: true, message: "数据源地址不能为空", trigger: "blur"}, {
