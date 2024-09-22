@@ -322,6 +322,7 @@ function handleUpdate(row) {
   const datasourceId = row.datasourceId || ids.value;
   getDatasourceById(datasourceId).then(response => {
     form.value = response.data;
+    form.value.datasourcePwd = "******";
     changePwd.value = false;
     open.value = true;
     title.value = "修改数据源";
