@@ -54,3 +54,21 @@ export function testDatasourceById(datasourceId) {
         data: datasourceId
     })
 }
+
+// 根据 ID 连接数据源获取所有数据库和表信息
+export function getDatabaseTableById(datasourceId) {
+    return request({
+        url: baseurl + '/' + datasourceId,
+        method: 'get',
+        params: datasourceId
+    })
+}
+
+// 连接数据源并执行 SQL 查询
+export function executingsql(data) {
+    return request({
+        url: baseurl + 'ExecutingSql',
+        method: 'post',
+        params: data
+    })
+}
