@@ -58,7 +58,7 @@ export function testDatasourceById(datasourceId) {
 // 根据 ID 连接数据源获取所有数据库和表信息
 export function getDatabaseTableById(datasourceId) {
     return request({
-        url: baseurl + '/' + datasourceId,
+        url: '/commonConfig/dataSourcedatabaseTable/' + datasourceId,
         method: 'get',
         params: datasourceId
     })
@@ -67,7 +67,7 @@ export function getDatabaseTableById(datasourceId) {
 // 连接数据源并执行 SQL 查询
 export function executingsql(data) {
     return request({
-        url: baseurl + 'ExecutingSql',
+        url: '/commonConfig/dataSourceExecutingSql',
         method: 'post',
         params: data
     })

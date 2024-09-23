@@ -5,21 +5,22 @@
         <el-card style="height:  calc(100vh - 135px); margin: 0 auto; border:1px ;  border-radius: 20px">
           <div class="common-layout">
             <el-select
-              v-model="value"
-              clearable
-              placeholder="请选择数据源"
-              style="width: 240px"
-              size="small"
+                v-model="value"
+                clearable
+                placeholder="请选择数据源"
+                style="width: 240px"
+                size="small"
+                @change="getTableListById"
             >
               <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
               />
             </el-select>
             <br/>
-            <span>当前库：</span>
+            <span>当前库：{{ options.find(item => item.value === value)?.label }}</span>
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
               <pane size="15">
                 <span>1</span>
@@ -43,10 +44,11 @@
 </template>
 
 <script setup name="QueryDb">
-import {listDatasource,getDatabaseTableById,executingsql} from '@/api/datasource/datasource';
+import {getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
-import { ref, onMounted } from 'vue';
+import {ref} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
+
 const loading = ref(true);
 const options = ref([]);
 const value = ref('');
@@ -58,11 +60,8 @@ const data = reactive({
   }
 });
 const {queryParams} = toRefs(data);
-watch(value, (newValue) => {
-  console.log('选中的数据源 ID:', newValue);
-  // 这里可以添加其他操作
-});
 
+// 获取数据源列表
 function getList() {
   loading.value = true;
   listDatasource(queryParams.value).then(response => {
@@ -73,11 +72,18 @@ function getList() {
     loading.value = false;
   });
 }
-onMounted(() => {
-  getList();
-});
+
+// 获取当前数据源的数据库列表
+function getTableListById(datasourceId) {
+  loading.value = true;
+  getDatabaseTableById(datasourceId).then(response => {
+    getList.value = response.data;
+    loading.value = false;
+  });
+}
 
 
+getList();
 </script>
 <style lang="scss" scoped>
 .splitpanes {
