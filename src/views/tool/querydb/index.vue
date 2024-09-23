@@ -5,26 +5,24 @@
         <el-card style="height:  calc(100vh - 135px); margin: 0 auto; border:1px ;  border-radius: 20px">
           <div class="common-layout">
             <el-select
-                v-model="value"
-                clearable
-                placeholder="请选择数据源"
-                style="width: 240px"
-                size="small"
+              v-model="value"
+              clearable
+              placeholder="请选择数据源"
+              style="width: 240px"
+              size="small"
             >
               <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
               />
             </el-select>
             <br/>
             <span>当前库：</span>
-            <splitpanes :push-other-panes="false" style="height: calc(97vh - 135px);">
+            <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
               <pane size="15">
-                <span>
-                  1
-                </span>
+                <span>1</span>
               </pane>
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
@@ -44,73 +42,42 @@
   </div>
 </template>
 
-<script setup name="Cache">
-import {getCache} from '@/api/monitor/cache';
-import * as echarts from 'echarts';
+<script setup name="QueryDb">
+import {listDatasource,getDatabaseTableById,executingsql} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
+import { ref, onMounted } from 'vue';
 import 'splitpanes/dist/splitpanes.css'
-
-const cache = ref([]);
-const commandstats = ref(null);
-const usedmemory = ref(null);
-const {proxy} = getCurrentInstance();
+const loading = ref(true);
+const options = ref([]);
+const value = ref('');
+const data = reactive({
+  form: {},
+  queryParams: {
+    pageNum: 1,
+    pageSize: 10
+  }
+});
+const {queryParams} = toRefs(data);
+watch(value, (newValue) => {
+  console.log('选中的数据源 ID:', newValue);
+  // 这里可以添加其他操作
+});
 
 function getList() {
-  proxy.$modal.loading("正在加载缓存监控数据，请稍候！");
-  getCache().then(response => {
-    proxy.$modal.closeLoading();
-    cache.value = response.data;
-
-    const commandstatsIntance = echarts.init(commandstats.value, "macarons");
-    commandstatsIntance.setOption({
-      tooltip: {
-        trigger: "item",
-        formatter: "{a} <br/>{b} : {c} ({d}%)"
-      },
-      series: [
-        {
-          name: "命令",
-          type: "pie",
-          roseType: "radius",
-          radius: [15, 95],
-          center: ["50%", "38%"],
-          data: response.data.commandStats,
-          animationEasing: "cubicInOut",
-          animationDuration: 1000
-        }
-      ]
-    });
-    const usedmemoryInstance = echarts.init(usedmemory.value, "macarons");
-    usedmemoryInstance.setOption({
-      tooltip: {
-        formatter: "{b} <br/>{a} : " + cache.value.info.used_memory_human
-      },
-      series: [
-        {
-          name: "峰值",
-          type: "gauge",
-          min: 0,
-          max: 1000,
-          detail: {
-            formatter: cache.value.info.used_memory_human
-          },
-          data: [
-            {
-              value: parseFloat(cache.value.info.used_memory_human),
-              name: "内存消耗"
-            }
-          ]
-        }
-      ]
-    })
-    window.addEventListener("resize", () => {
-      commandstatsIntance.resize();
-      usedmemoryInstance.resize();
-    });
-  })
+  loading.value = true;
+  listDatasource(queryParams.value).then(response => {
+    options.value = response.rows.map(item => ({
+      value: item.datasourceId,
+      label: item.datasourceName
+    }));
+    loading.value = false;
+  });
 }
+onMounted(() => {
+  getList();
+});
 
-getList();
+
 </script>
 <style lang="scss" scoped>
 .splitpanes {
