@@ -137,13 +137,13 @@
             <table cellspacing="0" style="width: 100%;">
               <thead>
                 <tr>
-                  <th class="el-table__cell el-table__cell is-leaf"><div class="cell">盘符路径</div></th>
-                  <th class="el-table__cell is-leaf"><div class="cell">文件系统</div></th>
-                  <th class="el-table__cell is-leaf"><div class="cell">盘符名称</div></th>
+                  <th class="el-table__cell el-table__cell is-leaf"><div class="cell">路径</div></th>
+                  <th class="el-table__cell is-leaf"><div class="cell">类型</div></th>
+                  <th class="el-table__cell is-leaf"><div class="cell">设备</div></th>
                   <th class="el-table__cell is-leaf"><div class="cell">总大小</div></th>
                   <th class="el-table__cell is-leaf"><div class="cell">可用大小</div></th>
                   <th class="el-table__cell is-leaf"><div class="cell">已用大小</div></th>
-                  <th class="el-table__cell is-leaf"><div class="cell">已用百分比</div></th>
+                  <th class="el-table__cell is-leaf"><div class="cell">使用率</div></th>
                 </tr>
               </thead>
               <tbody v-if="server.sysFiles">
