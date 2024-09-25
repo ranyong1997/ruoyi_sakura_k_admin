@@ -48,7 +48,7 @@
   </div>
 </template>
 
-<script setup name="QueryDb" lang="ts">
+<script setup name="QueryDb">
 import {getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
 import {reactive, ref, toRefs} from 'vue';
@@ -79,7 +79,7 @@ function getList() {
 }
 
 // 根据id 获取表结构列表
-function getTableListById(datasourceId: any) {
+function getTableListById(datasourceId) {
   if (datasourceId === '' || datasourceId === undefined) {
     return;
   }
@@ -106,22 +106,16 @@ function getTableListById(datasourceId: any) {
 }
 
 // 重构树结构
-interface Tree {
-  label: string
-  children?: Tree[]
-}
-
-const handleNodeClick = (data: Tree) => {
+const handleNodeClick = (data) => {
   console.log(data)
 }
 
 // 获取表列表
-const getTableList: any = ref([]);
+const getTableList = ref([]);
 const defaultProps = {
   children: 'children',
   label: 'label',
 }
-
 
 getList();
 </script>
