@@ -23,7 +23,12 @@
             <span>当前库：{{ options.find(item => item.value === value)?.label }}</span>
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
               <pane size="15">
-                <span>1</span>
+                <el-tree
+                    style="max-width: 600px"
+                    :data="getTableList"
+                    :props="defaultProps"
+                    @node-click="handleNodeClick"
+                />
               </pane>
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
@@ -43,10 +48,10 @@
   </div>
 </template>
 
-<script setup name="QueryDb">
+<script setup name="QueryDb" lang="ts">
 import {getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
-import {ref} from 'vue';
+import {reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
 
 const loading = ref(true);
@@ -73,18 +78,54 @@ function getList() {
   });
 }
 
-// 获取当前数据源的数据库列表
+// 根据id 获取表结构列表
 function getTableListById(datasourceId) {
+  if (datasourceId === '' || datasourceId === undefined) {
+    return;
+  }
   loading.value = true;
   getDatabaseTableById(datasourceId).then(response => {
-    getList.value = response.data;
+    let res = response.data.result.database_structure;
+    let result = [];// 定义一个树
+    for (let key in res) {
+      let obj = {
+        label: key,
+        children: []
+      }
+      for (let i in res[key]) {
+        let child = {
+          label: res[key][i],
+        }
+        obj.children.push(child)
+      }
+      result.push(obj)
+    }
+    getTableList.value = result;
     loading.value = false;
   });
+}
+
+// 重构树结构
+interface Tree {
+  label: string
+  children?: Tree[]
+}
+
+const handleNodeClick = (data: Tree) => {
+  console.log(data)
+}
+
+// 获取表列表
+const getTableList: any = ref([]);
+const defaultProps = {
+  children: 'children',
+  label: 'label',
 }
 
 
 getList();
 </script>
+
 <style lang="scss" scoped>
 .splitpanes {
   background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
