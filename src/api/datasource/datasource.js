@@ -65,7 +65,7 @@ export function getDatabaseTableById(datasourceId) {
 }
 
 // 连接数据源并执行 SQL 查询
-export function executingsql(data) {
+export function executingSql(data) {
     return request({
         url: '/commonConfig/dataSourceExecutingSql',
         method: 'post',

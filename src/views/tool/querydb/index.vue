@@ -23,17 +23,24 @@
             <span>当前库：{{ options.find(item => item.value === value)?.label }}</span>
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
               <pane size="15">
-                <el-tree
-                    style="max-width: 600px"
-                    :data="getTableList"
-                    :props="defaultProps"
-                    @node-click="handleNodeClick"
-                />
+                <el-scrollbar height="800px">
+                  <el-tree
+                      style="max-width: 600px"
+                      :data="getTableList"
+                      :props="defaultProps"
+                      @node-click="handleNodeClick"
+                  />
+                </el-scrollbar>
               </pane>
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
                   <pane size="45">
-                    <span>2</span>
+                    <span>
+                      <el-button type="primary"
+                                 @click="getSqlData(1,'skf','SELECT * FROM sys_role_menu;')">
+                        查询
+                      </el-button>
+                    </span>
                   </pane>
                   <pane>
                     <span>3</span>
@@ -49,7 +56,7 @@
 </template>
 
 <script setup name="QueryDb">
-import {getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
+import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
 import {reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
@@ -105,10 +112,6 @@ function getTableListById(datasourceId) {
   });
 }
 
-// 重构树结构
-const handleNodeClick = (data) => {
-  console.log(data)
-}
 
 // 获取表列表
 const getTableList = ref([]);
@@ -117,12 +120,56 @@ const defaultProps = {
   label: 'label',
 }
 
+// 节点点击事件
+const handleNodeClick = (data, node) => {
+  console.log(data, node, "----");
+  if (!data) {
+    console.error("节点数据为空");
+    return;
+  }
+  // 获取当前选中的数据源ID
+  const datasourceId = value.value;
+  console.log("datasourceId----", datasourceId)
+  if (!datasourceId) {
+    console.error("未选择数据源");
+    return;
+  }
+
+  // 获取点击的节点标签（表名或列名）
+  const label = data.label;
+  console.log("label----",label )
+
+  if (!label) {
+    console.error("节点标签为空");
+    return;
+  }
+  // 构造SQL查询语句
+
+
+};
+// 根据表名执行 sql 查询
+const getSqlData = (datasource_id, database, sql) => {
+  loading.value = true;
+  const params = {
+    datasource_id,
+    database,
+    sql
+  };
+  executingSql(params).then(response => {
+    loading.value = false;
+    console.log(response);
+  }).catch(error => {
+    loading.value = false;
+    console.error("查询出错:", error);
+  });
+};
 getList();
 </script>
 
 <style lang="scss" scoped>
 .splitpanes {
   background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+  //background: #FFFFFF;
 }
 
 .splitpanes__pane {
@@ -141,4 +188,5 @@ getList();
   min-height: 6px;
   background: linear-gradient(0deg, #ccc, #111);
 }
+
 </style>
