@@ -79,7 +79,7 @@ function getList() {
 }
 
 // 根据id 获取表结构列表
-function getTableListById(datasourceId) {
+function getTableListById(datasourceId: any) {
   if (datasourceId === '' || datasourceId === undefined) {
     return;
   }
