@@ -43,7 +43,7 @@
                     </span>
                   </pane>
                   <pane>
-                    <span>3</span>
+                    <span>3</div></span>
                   </pane>
                 </splitpanes>
               </pane>
@@ -55,11 +55,12 @@
   </div>
 </template>
 
-<script setup name="QueryDb">
+<script setup name="QueryDb" lang="ts">
 import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
-import {reactive, ref, toRefs} from 'vue';
+import {nextTick, onBeforeUnmount, reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
+import * as monaco from 'monaco-editor';
 
 const loading = ref(true);
 const options = ref([]);
@@ -72,6 +73,49 @@ const data = reactive({
   }
 });
 const {queryParams} = toRefs(data);
+const text = ref('')
+onBeforeUnmount(() => {
+  editor.dispose()
+})
+
+
+let editor: monaco.editor.IStandaloneCodeEditor;
+
+const editorInit = () => {
+  nextTick(() => {
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: true,
+      noSyntaxValidation: false
+    });
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ES2016,
+      allowNonTsExtensions: true
+    });
+
+    !editor ? editor = monaco.editor.create(document.getElementById('codeEditBox') as HTMLElement, {
+          value: text.value, // 编辑器初始显示文字
+          language: 'mysql', // 语言支持自行查阅demo
+          automaticLayout: true, // 自适应布局
+          theme: 'vs-dark', // 官方自带三种主题vs, hc-black, or vs-dark
+          foldingStrategy: 'indentation',
+          renderLineHighlight: 'all', // 行亮
+          selectOnLineNumbers: true, // 显示行号
+          minimap: {
+            enabled: false,
+          },
+          readOnly: false, // 只读
+          fontSize: 16, // 字体大小
+          scrollBeyondLastLine: false, // 取消代码后面一大段空白
+          overviewRulerBorder: false, // 不要滚动条的边框
+        }) :
+        editor.setValue("");
+    // 监听值的变化
+    editor.onDidChangeModelContent((val: any) => {
+      text.value = editor.getValue();
+
+    })
+  })
+}
 
 // 获取数据源列表
 function getList() {
@@ -137,7 +181,7 @@ const handleNodeClick = (data, node) => {
 
   // 获取点击的节点标签（表名或列名）
   const label = data.label;
-  console.log("label----",label )
+  console.log("label----", label)
 
   if (!label) {
     console.error("节点标签为空");
@@ -163,6 +207,8 @@ const getSqlData = (datasource_id, database, sql) => {
     console.error("查询出错:", error);
   });
 };
+
+editorInit();
 getList();
 </script>
 
@@ -188,5 +234,4 @@ getList();
   min-height: 6px;
   background: linear-gradient(0deg, #ccc, #111);
 }
-
 </style>
