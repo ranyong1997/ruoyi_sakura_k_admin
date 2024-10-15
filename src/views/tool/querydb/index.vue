@@ -43,7 +43,7 @@
                     </span>
                   </pane>
                   <pane>
-                    <span>3</div></span>
+                    <span>3</span>
                   </pane>
                 </splitpanes>
               </pane>
