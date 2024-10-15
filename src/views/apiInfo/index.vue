@@ -85,11 +85,15 @@
       <el-table-column label="所属项目" align="center" prop="projectId" :show-overflow-tooltip="true"/>
       <el-table-column label="请求方法" align="center" prop="apiMethod" :show-overflow-tooltip="true">
         <template #default="scope">
-          <el-tag :type="getTagType(scope.row.apiMethod)">{{ scope.row.apiMethod }}</el-tag>
+          <el-tag :type="getTagMethod(scope.row.apiMethod)">{{ scope.row.apiMethod }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="请求地址" align="center" prop="apiUrl" :show-overflow-tooltip="true"/>
-      <el-table-column label="优先级" align="center" prop="apiLevel" :show-overflow-tooltip="true"/>
+      <el-table-column label="优先级" align="center" prop="apiLevel" :show-overflow-tooltip="true">
+        <template #default="scope">
+          <el-tag :type="getTagLevel(scope.row.apiLevel)">{{ scope.row.apiLevel }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="apiStatus" :show-overflow-tooltip="true">
         <template #default="scope">
           <dict-tag :options="sys_normal_disable" :value="scope.row.apiStatus"/>
@@ -228,7 +232,7 @@ const select_apiLevel = [
 ]
 const expression = ref("");
 
-const getTagType = computed(() => (method) => {
+const getTagMethod = computed(() => (method) => {
   switch (method.toUpperCase()) {
     case 'GET':
       return 'primary'
@@ -242,6 +246,21 @@ const getTagType = computed(() => (method) => {
       return 'info'
     default:
       return ''
+  }
+})
+
+const getTagLevel = computed(() => (level) => {
+  switch (level.toUpperCase()) {
+    case 'P0':
+      return 'primary'
+    case 'P1':
+      return 'success'
+    case 'DELETE':
+      return 'danger'
+    case 'P2':
+      return 'warning'
+    case 'P3':
+      return 'info'
   }
 })
 
