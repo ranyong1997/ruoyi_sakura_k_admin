@@ -83,7 +83,11 @@
       <el-table-column label="用例编号" width="center" align="center" prop="apiId"/>
       <el-table-column label="用例名称" width="center" align="center" prop="apiName"/>
       <el-table-column label="所属项目" align="center" prop="projectId" :show-overflow-tooltip="true"/>
-      <el-table-column label="请求方法" align="center" prop="apiMethod" :show-overflow-tooltip="true"/>
+      <el-table-column label="请求方法" align="center" prop="apiMethod" :show-overflow-tooltip="true">
+        <template #default="scope">
+          <el-tag :type="getTagType(scope.row.apiMethod)">{{ scope.row.apiMethod }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="请求地址" align="center" prop="apiUrl" :show-overflow-tooltip="true"/>
       <el-table-column label="优先级" align="center" prop="apiLevel" :show-overflow-tooltip="true"/>
       <el-table-column label="状态" align="center" prop="apiStatus" :show-overflow-tooltip="true">
@@ -224,6 +228,22 @@ const select_apiLevel = [
 ]
 const expression = ref("");
 
+const getTagType = computed(() => (method) => {
+  switch (method.toUpperCase()) {
+    case 'GET':
+      return 'primary'
+    case 'POST':
+      return 'success'
+    case 'DELETE':
+      return 'danger'
+    case 'PUT':
+      return 'warning'
+    case 'PATCH':
+      return 'info'
+    default:
+      return ''
+  }
+})
 
 const data = reactive({
   form: {},
