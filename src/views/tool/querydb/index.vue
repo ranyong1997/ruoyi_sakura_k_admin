@@ -24,13 +24,13 @@
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
               <!-- <el-scrollbar height="800px"> -->
               <pane size="15" class="splitpanes__pane-tree">
-                  <el-tree
-                      :style="`width: ${getTableList.length > 0 ? 'auto' : '100%'};`"
-                      :data="getTableList"
-                      :props="defaultProps"
-                      @node-click="handleNodeClick"
-                  />
-                </pane>
+                <el-tree
+                    :style="`width: ${getTableList.length > 0 ? 'auto' : '100%'};`"
+                    :data="getTableList"
+                    :props="defaultProps"
+                    @node-click="handleNodeClick"
+                />
+              </pane>
               <!-- </el-scrollbar> -->
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
@@ -56,7 +56,7 @@
 </template>
 
 <script setup name="QueryDb" lang="ts">
-import { ElMessage } from 'element-plus'
+import {ElMessage} from 'element-plus'
 import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
 import {nextTick, onBeforeUnmount, reactive, ref, toRefs} from 'vue';
@@ -139,9 +139,9 @@ function getTableListById(datasourceId) {
   getDatabaseTableById(datasourceId).then(response => {
     let res = response.data.result.database_structure;
     let result = [];// 定义一个树
-    if(res.message){
+    if (res.message) {
       ElMessage.error(res.message)
-    }else{
+    } else {
       for (let key in res) {
         let obj = {
           label: key,
@@ -156,7 +156,6 @@ function getTableListById(datasourceId) {
         result.push(obj)
       }
     }
-    
     getTableList.value = result;
     loading.value = false;
   });
@@ -220,16 +219,18 @@ getList();
 
 <style lang="scss" scoped>
 .splitpanes {
-  // background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
   background: #FFFFFF;
 }
 
 .splitpanes__pane {
-  // box-shadow: 0 0 5px rgba(0, 0, 0, .2) inset;
-  // justify-content: center;
-  // align-items: center;
   display: flex;
 }
+// 树
+.splitpanes__pane-tree {
+  overflow: auto;
+  align-items: baseline;
+}
+
 // 树
 .splitpanes__pane-tree {
   overflow: auto;
