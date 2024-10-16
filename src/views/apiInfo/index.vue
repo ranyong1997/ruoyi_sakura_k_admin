@@ -82,7 +82,7 @@
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="用例编号" width="center" align="center" prop="apiId"/>
       <el-table-column label="用例名称" width="center" align="center" prop="apiName"/>
-      <el-table-column label="所属项目" align="center" prop="projectId" :show-overflow-tooltip="true"/>
+      <el-table-column label="所属项目" align="center" prop="project.projectName" :show-overflow-tooltip="true"/>
       <el-table-column label="请求方法" align="center" prop="apiMethod" :show-overflow-tooltip="true">
         <template #default="scope">
           <el-tag :type="getTagMethod(scope.row.apiMethod)">{{ scope.row.apiMethod }}</el-tag>
