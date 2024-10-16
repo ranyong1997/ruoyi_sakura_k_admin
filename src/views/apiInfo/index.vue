@@ -99,13 +99,15 @@
           <dict-tag :options="sys_normal_disable" :value="scope.row.apiStatus"/>
         </template>
       </el-table-column>
+       <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
+                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
       <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
                        :formatter="(row) => parseTime(row.updateTime)"
                        :show-overflow-tooltip="true"/>
       <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
-                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="最后执行状态" width="center" align="center" prop="xxx" :show-overflow-tooltip="true"/>
+      <el-table-column label="最后执行时间" width="center" align="center" prop="xxx" :show-overflow-tooltip="true"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-tooltip content="运行" placement="top">
@@ -114,6 +116,10 @@
           </el-tooltip>
           <el-tooltip content="修改" placement="top">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
+                       v-hasPermi="['apitest:apiInfo:edit']"></el-button>
+          </el-tooltip>
+          <el-tooltip content="复制" placement="top">
+            <el-button link type="primary" icon="Connection" @click="handleUpdate(scope.row)"
                        v-hasPermi="['apitest:apiInfo:edit']"></el-button>
           </el-tooltip>
           <el-tooltip content="删除" placement="top">
@@ -423,7 +429,7 @@ const testApi = () => {
     if (valid) {
       if (form.value.apiId) {
         testApiById(form.value.apiId).then(response => {
-          proxy.$modal.msgSuccess("测试已发送");
+          proxy.$modal.msgSuccess("执行成功~");
         })
       } else {
         proxy.$modal.msgWarning("请先保存接口再进行测试");
