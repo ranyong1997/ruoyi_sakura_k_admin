@@ -66,7 +66,6 @@ import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasour
 import {Pane, Splitpanes} from 'splitpanes'
 import {reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
-import {format} from 'sql-formatter';
 
 const loading = ref(true);
 const options = ref([]);
@@ -170,9 +169,6 @@ const handleNodeClick = (data, node) => {
   state.executeForm.datasource_id = datasourceId;
   state.executeForm.database = parentInfo;
   state.sql = `SELECT * FROM ${label};`
-  // 格式化语句
-  console.log(format( state.sql, { language: 'mysql' }));
-
 };
 // 根据表名执行 sql 查询
 const getSqlData = (datasource_id, database, sql) => {
@@ -195,7 +191,7 @@ const getSqlData = (datasource_id, database, sql) => {
 // 编辑器配置信息
 const state = reactive({
   lang: 'sql',
-  height: 300,
+  height: 600,
   sql: 'SELECT * FROM ',
   executeForm: {
     datasource_id: '',
