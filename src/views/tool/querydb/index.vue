@@ -137,33 +137,10 @@ const defaultProps = {
   label: 'label',
 }
 
-// 获取父节点信息
-const getParentNodeInfo = (node) => {
-  if (node.parent) {
-    return {
-      label: node.parent.label,
-      level: node.parent.level,
-      // 可以根据需要添加更多父节点信息
-    };
-  }
-  return null;
-};
-
-// 获取子节点信息
-const getChildrenInfo = (data) => {
-  if (data.children && data.children.length > 0) {
-    return data.children.map(child => ({
-      label: child.label,
-      // 可以根据需要添加更多子节点信息
-    }));
-  }
-  return [];
-};
 
 // 获取当前选中的数据源ID
 const getDatasourceId = () => {
   const datasourceId = value.value;
-  console.log("datasourceId----", datasourceId);
   if (!datasourceId) {
     console.error("未选择数据源");
     return null;
@@ -171,33 +148,34 @@ const getDatasourceId = () => {
   return datasourceId;
 };
 
-
 // 节点点击事件
 const handleNodeClick = (data, node) => {
-  console.log(data, node, "---->>");
   if (!data) {
     console.error("节点数据为空");
     return;
   }
-// 获取当前选中的数据源ID
-  const datasourceId = value.value;
-  console.log("datasourceId----", datasourceId)
-  if (!datasourceId) {
-    console.error("未选择数据源");
-    return;
-  }
 
-// 获取点击的节点标签（表名或列名）
+  // 获取当前选中的数据源ID
+  const datasourceId = getDatasourceId();
+  if (!datasourceId) return
+
+  // 获取点击的节点标签（表名或列名）
   const label = data.label;
-  console.log("label----", label)
   if (!label) {
     console.error("节点标签为空");
     return;
   }
 
-// 更新 executeForm 中的值
+  // 获取父节点信息
+  let parentInfo = "";
+  if (node.parent) {
+    parentInfo = node.parent.data.label;
+  }
+
+  // 更新 executeForm 中的值
   state.executeForm.datasource_id = datasourceId;
-  state.executeForm.database = label;
+  state.executeForm.database = parentInfo;
+  state.sql = `SELECT * FROM ${label};`
 };
 // 根据表名执行 sql 查询
 const getSqlData = (datasource_id, database, sql) => {
