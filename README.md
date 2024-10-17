@@ -1,3 +1,10 @@
+# 运行前端
+## 测试环境
+npm run dev
+## 生产环境构建
+npm run build:stage 
+
+
 ## 其他操作
 
 - 提交代码模板
