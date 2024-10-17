@@ -22,7 +22,6 @@
             <br/>
             <span>当前库：{{ options.find(item => item.value === value)?.label }}</span>
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
-              <!-- <el-scrollbar height="800px"> -->
               <pane size="15" class="splitpanes__pane-tree">
                 <el-tree
                     :style="`width: ${getTableList.length > 0 ? 'auto' : '100%'};`"
@@ -31,18 +30,10 @@
                     @node-click="handleNodeClick"
                 />
               </pane>
-              <!-- </el-scrollbar> -->
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
                   <pane size="45">
-                    <!-- <span> -->
-                    <!-- <el-button type="primary"
-                               @click="getSqlData(1,'skf','SELECT * FROM sys_role_menu;')"> 查询
-                    </el-button> -->
-                    <!-- <div id="codeEditBox"></div> -->
-                    <!-- </span> -->
-
-                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}" :dbs="state.dbs"
+                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}"
                                      v-model:value="state.sql" v-model:lang="state.lang"
                                      :executeHandle="execute"/>
                   </pane>
@@ -55,7 +46,9 @@
                         执行
                       </el-button>
                     </div>
-                    <span>3</span>
+                    <span>3
+
+                    </span>
                   </pane>
                 </splitpanes>
               </pane>
@@ -73,6 +66,7 @@ import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasour
 import {Pane, Splitpanes} from 'splitpanes'
 import {reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
+import {format} from 'sql-formatter';
 
 const loading = ref(true);
 const options = ref([]);
@@ -176,6 +170,9 @@ const handleNodeClick = (data, node) => {
   state.executeForm.datasource_id = datasourceId;
   state.executeForm.database = parentInfo;
   state.sql = `SELECT * FROM ${label};`
+  // 格式化语句
+  console.log(format( state.sql, { language: 'mysql' }));
+
 };
 // 根据表名执行 sql 查询
 const getSqlData = (datasource_id, database, sql) => {
@@ -193,6 +190,7 @@ const getSqlData = (datasource_id, database, sql) => {
     console.error("查询出错:", error);
   });
 };
+
 
 // 编辑器配置信息
 const state = reactive({
