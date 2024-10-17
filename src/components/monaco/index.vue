@@ -8,13 +8,14 @@ import SQLSnippets from "./core/sql.js"
 import {getJsonPath} from './jsonPath'
 import {ElMessage} from "element-plus";
 import commonFunction from "./commonFunction.js";
+import {format} from 'sql-formatter';
 
 const props = defineProps({
   // 展示的字符串
-  // modelValue: {
-  //   type: String,
-  //   default: '',
-  // },
+  modelValue: {
+    type: String,
+    default: '',
+  },
   value: {
     type: String,
     default: '',
@@ -33,11 +34,11 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  // // 比对需要的新数据
-  // newString: {
-  //   type: String,
-  //   default: '',
-  // },
+  // 比对需要的新数据
+  newString: {
+    type: String,
+    default: '',
+  },
   // 语言
   lang: {
     type: String,
@@ -59,7 +60,6 @@ const props = defineProps({
   executeHandle: {
     type: Function,
   },
-
   dbList: {
     type: Array,
     default: () => []
@@ -230,7 +230,6 @@ const registerCustomEvent = (editor) => {
       // keybindings: [
       //   monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ)
       // ],
-
       run: copyToClipboard
     })
   }
@@ -244,6 +243,17 @@ const registerCustomEvent = (editor) => {
       contextMenuGroupId: 'navigation',// 右键展示位置
       run: () => {
         if (props.executeHandle) props.executeHandle()
+      }
+    })
+    editor.addAction({
+      id: 'format', // action unique id
+      label: '格式化', // action 在右键时展示的名称
+      precondition: null,
+      keybindingContext: "editorLangId == 'sql'",
+      contextMenuGroupId: 'navigation',// 右键展示位置
+      run: () => {
+        // 格式化语句
+        setValue(format(props.value, {language: 'mysql'}))
       }
     })
 
@@ -373,13 +383,6 @@ watch(
     },
     {deep: true}
 )
-// watch(
-//     () => props.newString,
-//     (newVal) => {
-//       toRaw(modifiedEditor.value).setValue(newVal)
-//     },
-//     {deep: true}
-// )
 
 watch(
     () => props.dbs,
