@@ -22,6 +22,7 @@
             <br/>
             <span>当前库：{{ options.find(item => item.value === value)?.label }}</span>
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
+              <!-- <el-scrollbar height="800px"> -->
               <pane size="15" class="splitpanes__pane-tree">
                 <el-tree
                     :style="`width: ${getTableList.length > 0 ? 'auto' : '100%'};`"
@@ -30,10 +31,18 @@
                     @node-click="handleNodeClick"
                 />
               </pane>
+              <!-- </el-scrollbar> -->
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
                   <pane size="45">
-                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}"
+                    <!-- <span> -->
+                    <!-- <el-button type="primary"
+                               @click="getSqlData(1,'skf','SELECT * FROM sys_role_menu;')"> 查询
+                    </el-button> -->
+                    <!-- <div id="codeEditBox"></div> -->
+                    <!-- </span> -->
+
+                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}" :dbs="state.dbs"
                                      v-model:value="state.sql" v-model:lang="state.lang"
                                      :executeHandle="execute"/>
                   </pane>
@@ -46,9 +55,7 @@
                         执行
                       </el-button>
                     </div>
-                    <span>3
-
-                    </span>
+                    <span>3</span>
                   </pane>
                 </splitpanes>
               </pane>
@@ -130,10 +137,33 @@ const defaultProps = {
   label: 'label',
 }
 
+// 获取父节点信息
+const getParentNodeInfo = (node) => {
+  if (node.parent) {
+    return {
+      label: node.parent.label,
+      level: node.parent.level,
+      // 可以根据需要添加更多父节点信息
+    };
+  }
+  return null;
+};
+
+// 获取子节点信息
+const getChildrenInfo = (data) => {
+  if (data.children && data.children.length > 0) {
+    return data.children.map(child => ({
+      label: child.label,
+      // 可以根据需要添加更多子节点信息
+    }));
+  }
+  return [];
+};
 
 // 获取当前选中的数据源ID
 const getDatasourceId = () => {
   const datasourceId = value.value;
+  console.log("datasourceId----", datasourceId);
   if (!datasourceId) {
     console.error("未选择数据源");
     return null;
@@ -141,34 +171,33 @@ const getDatasourceId = () => {
   return datasourceId;
 };
 
+
 // 节点点击事件
 const handleNodeClick = (data, node) => {
+  console.log(data, node, "---->>");
   if (!data) {
     console.error("节点数据为空");
     return;
   }
+// 获取当前选中的数据源ID
+  const datasourceId = value.value;
+  console.log("datasourceId----", datasourceId)
+  if (!datasourceId) {
+    console.error("未选择数据源");
+    return;
+  }
 
-  // 获取当前选中的数据源ID
-  const datasourceId = getDatasourceId();
-  if (!datasourceId) return
-
-  // 获取点击的节点标签（表名或列名）
+// 获取点击的节点标签（表名或列名）
   const label = data.label;
+  console.log("label----", label)
   if (!label) {
     console.error("节点标签为空");
     return;
   }
 
-  // 获取父节点信息
-  let parentInfo = "";
-  if (node.parent) {
-    parentInfo = node.parent.data.label;
-  }
-
-  // 更新 executeForm 中的值
+// 更新 executeForm 中的值
   state.executeForm.datasource_id = datasourceId;
-  state.executeForm.database = parentInfo;
-  state.sql = `SELECT * FROM ${label};`
+  state.executeForm.database = label;
 };
 // 根据表名执行 sql 查询
 const getSqlData = (datasource_id, database, sql) => {
@@ -187,11 +216,10 @@ const getSqlData = (datasource_id, database, sql) => {
   });
 };
 
-
 // 编辑器配置信息
 const state = reactive({
   lang: 'sql',
-  height: 600,
+  height: 300,
   sql: 'SELECT * FROM ',
   executeForm: {
     datasource_id: '',
