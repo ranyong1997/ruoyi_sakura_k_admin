@@ -22,7 +22,6 @@
             <br/>
             <span>当前库：{{ options.find(item => item.value === value)?.label }}</span>
             <splitpanes :push-other-panes="false" style="height: calc(91vh - 135px);">
-              <!-- <el-scrollbar height="800px"> -->
               <pane size="15" class="splitpanes__pane-tree">
                 <el-tree
                     :style="`width: ${getTableList.length > 0 ? 'auto' : '100%'};`"
@@ -31,20 +30,25 @@
                     @node-click="handleNodeClick"
                 />
               </pane>
-              <!-- </el-scrollbar> -->
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
                   <pane size="45">
-                    <!-- <span> -->
-                      <!-- <el-button type="primary"
-                                 @click="getSqlData(1,'skf','SELECT * FROM sys_role_menu;')"> 查询
-                      </el-button> -->
-                      <!-- <div id="codeEditBox"></div> -->
-                    <!-- </span> -->
-                     <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}" :dbs="state.dbs" v-model:value="state.sql" v-model:lang="state.lang" :executeHandle="execute" ></z-monaco-editor>
+                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}"
+                                     v-model:value="state.sql" v-model:lang="state.lang"
+                                     :executeHandle="execute"/>
                   </pane>
                   <pane>
-                    <span>3</span>
+                    <div class="db-query-top-bar">
+                      <el-button link type="primary" @click="execute">
+                        <el-icon>
+                          <ele-CaretRight/>
+                        </el-icon>
+                        执行
+                      </el-button>
+                    </div>
+                    <span>3
+
+                    </span>
                   </pane>
                 </splitpanes>
               </pane>
@@ -56,16 +60,16 @@
   </div>
 </template>
 
-<script setup name="QueryDb" lang="ts">
+<script setup name="QueryDb">
 import {ElMessage} from 'element-plus'
 import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasource/datasource';
 import {Pane, Splitpanes} from 'splitpanes'
-import {nextTick, onBeforeUnmount, reactive, ref, toRefs} from 'vue';
+import {reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
-import * as monaco from 'monaco-editor';
 
 const loading = ref(true);
 const options = ref([]);
+const monacoEditRef = ref()
 const value = ref('');
 const data = reactive({
   form: {},
@@ -75,7 +79,6 @@ const data = reactive({
   }
 });
 const {queryParams} = toRefs(data);
-const text = ref('fuck')
 
 // 获取数据源列表
 function getList() {
@@ -120,7 +123,6 @@ function getTableListById(datasourceId) {
   });
 }
 
-
 // 获取表列表
 const getTableList = ref([]);
 const defaultProps = {
@@ -128,32 +130,45 @@ const defaultProps = {
   label: 'label',
 }
 
+
+// 获取当前选中的数据源ID
+const getDatasourceId = () => {
+  const datasourceId = value.value;
+  if (!datasourceId) {
+    console.error("未选择数据源");
+    return null;
+  }
+  return datasourceId;
+};
+
 // 节点点击事件
 const handleNodeClick = (data, node) => {
-  console.log(data, node, "----");
   if (!data) {
     console.error("节点数据为空");
     return;
   }
+
   // 获取当前选中的数据源ID
-  const datasourceId = value.value;
-  console.log("datasourceId----", datasourceId)
-  if (!datasourceId) {
-    console.error("未选择数据源");
-    return;
-  }
+  const datasourceId = getDatasourceId();
+  if (!datasourceId) return
 
   // 获取点击的节点标签（表名或列名）
   const label = data.label;
-  console.log("label----", label)
-
   if (!label) {
     console.error("节点标签为空");
     return;
   }
-  // 构造SQL查询语句
 
+  // 获取父节点信息
+  let parentInfo = "";
+  if (node.parent) {
+    parentInfo = node.parent.data.label;
+  }
 
+  // 更新 executeForm 中的值
+  state.executeForm.datasource_id = datasourceId;
+  state.executeForm.database = parentInfo;
+  state.sql = `SELECT * FROM ${label};`
 };
 // 根据表名执行 sql 查询
 const getSqlData = (datasource_id, database, sql) => {
@@ -165,35 +180,32 @@ const getSqlData = (datasource_id, database, sql) => {
   };
   executingSql(params).then(response => {
     loading.value = false;
-    console.log(response);
+    console.log('response--->', response);
   }).catch(error => {
     loading.value = false;
     console.error("查询出错:", error);
   });
 };
 
-getList();
 
-
-const monacoEditRef = ref()
+// 编辑器配置信息
 const state = reactive({
   lang: 'sql',
-  height: 300,
-  // db
-  dbs: [],
-  //execute
-  sql: 'select  * from ',
+  height: 600,
+  sql: 'SELECT * FROM ',
   executeForm: {
+    datasource_id: '',
+    database: '',
     sql: '',
-    source_id: "",
-    database: "",
   }
 });
 
+// 组合数据源、数据库、sql语句进行 sql 操作
 const execute = () => {
-  console.log('execute');
-  
+  getSqlData(state.executeForm.datasource_id, state.executeForm.database, state.sql)
 }
+
+getList();
 </script>
 
 <style lang="scss" scoped>
@@ -204,6 +216,7 @@ const execute = () => {
 .splitpanes__pane {
   display: flex;
 }
+
 // 树
 .splitpanes__pane-tree {
   overflow: auto;
@@ -229,5 +242,12 @@ const execute = () => {
 #codeEditBox {
   width: 100%;
   height: 500px;
+}
+
+.db-query-top-bar {
+  flex: none;
+  display: flex;
+  border-bottom: 1px solid #dee2ea;
+  padding-bottom: 10px;
 }
 </style>

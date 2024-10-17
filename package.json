@@ -41,6 +41,7 @@
     "nprogress": "0.2.0",
     "pinia": "2.1.7",
     "splitpanes": "^3.1.5",
+    "sql-formatter": "^15.4.3",
     "vue": "3.4.15",
     "vue-clipboard3": "^2.0.0",
     "vue-cropper": "1.1.1",
