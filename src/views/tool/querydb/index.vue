@@ -35,12 +35,13 @@
               <pane>
                 <splitpanes :push-other-panes="false" horizontal>
                   <pane size="45">
-                    <span>
-                      <el-button type="primary"
-                                 @click="getSqlData(1,'skf','SELECT * FROM sys_role_menu;')">
-                        查询
-                      </el-button>
-                    </span>
+                    <!-- <span> -->
+                      <!-- <el-button type="primary"
+                                 @click="getSqlData(1,'skf','SELECT * FROM sys_role_menu;')"> 查询
+                      </el-button> -->
+                      <!-- <div id="codeEditBox"></div> -->
+                    <!-- </span> -->
+                     <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}" :dbs="state.dbs" v-model:value="state.sql" v-model:lang="state.lang" :executeHandle="execute" ></z-monaco-editor>
                   </pane>
                   <pane>
                     <span>3</span>
@@ -74,49 +75,7 @@ const data = reactive({
   }
 });
 const {queryParams} = toRefs(data);
-const text = ref('')
-onBeforeUnmount(() => {
-  editor.dispose()
-})
-
-
-let editor: monaco.editor.IStandaloneCodeEditor;
-
-const editorInit = () => {
-  nextTick(() => {
-    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true,
-      noSyntaxValidation: false
-    });
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.ES2016,
-      allowNonTsExtensions: true
-    });
-
-    !editor ? editor = monaco.editor.create(document.getElementById('codeEditBox') as HTMLElement, {
-          value: text.value, // 编辑器初始显示文字
-          language: 'mysql', // 语言支持自行查阅demo
-          automaticLayout: true, // 自适应布局
-          theme: 'vs-dark', // 官方自带三种主题vs, hc-black, or vs-dark
-          foldingStrategy: 'indentation',
-          renderLineHighlight: 'all', // 行亮
-          selectOnLineNumbers: true, // 显示行号
-          minimap: {
-            enabled: false,
-          },
-          readOnly: false, // 只读
-          fontSize: 16, // 字体大小
-          scrollBeyondLastLine: false, // 取消代码后面一大段空白
-          overviewRulerBorder: false, // 不要滚动条的边框
-        }) :
-        editor.setValue("");
-    // 监听值的变化
-    editor.onDidChangeModelContent((val: any) => {
-      text.value = editor.getValue();
-
-    })
-  })
-}
+const text = ref('fuck')
 
 // 获取数据源列表
 function getList() {
@@ -156,7 +115,6 @@ function getTableListById(datasourceId) {
         result.push(obj)
       }
     }
-
     getTableList.value = result;
     loading.value = false;
   });
@@ -214,8 +172,28 @@ const getSqlData = (datasource_id, database, sql) => {
   });
 };
 
-editorInit();
 getList();
+
+
+const monacoEditRef = ref()
+const state = reactive({
+  lang: 'sql',
+  height: 300,
+  // db
+  dbs: [],
+  //execute
+  sql: 'select  * from ',
+  executeForm: {
+    sql: '',
+    source_id: "",
+    database: "",
+  }
+});
+
+const execute = () => {
+  console.log('execute');
+  
+}
 </script>
 
 <style lang="scss" scoped>
@@ -225,6 +203,11 @@ getList();
 
 .splitpanes__pane {
   display: flex;
+}
+// 树
+.splitpanes__pane-tree {
+  overflow: auto;
+  align-items: baseline;
 }
 
 // 树
@@ -241,5 +224,10 @@ getList();
 .splitpanes--horizontal > .splitpanes__splitter {
   min-height: 6px;
   background: linear-gradient(0deg, #ccc, #111);
+}
+
+#codeEditBox {
+  width: 100%;
+  height: 500px;
 }
 </style>
