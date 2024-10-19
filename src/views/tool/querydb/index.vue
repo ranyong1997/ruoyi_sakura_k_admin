@@ -59,7 +59,16 @@
                             :prop="header"
                             :label="header"
                             min-width="150"
-                        />
+                        >
+                          <template #default="scope">
+                            <expandable-cell
+                                v-if="scope.row && scope.row[header] !== undefined"
+                                :content="String(scope.row[header])"
+                                :max-length="50"
+                            />
+                            <span v-else>-</span>
+                          </template>
+                        </el-table-column>
                       </el-table>
                     </div>
                   </pane>
@@ -79,6 +88,7 @@ import {executingSql, getDatabaseTableById, listDatasource} from '@/api/datasour
 import {Pane, Splitpanes} from 'splitpanes'
 import {reactive, ref, toRefs} from 'vue';
 import 'splitpanes/dist/splitpanes.css'
+import ExpandableCell from './components/ExpandableCell.vue';
 
 const loading = ref(true);
 const options = ref([]);
@@ -146,7 +156,6 @@ const defaultProps = {
   label: 'label',
 }
 
-
 // 获取当前选中的数据源ID
 const getDatasourceId = () => {
   const datasourceId = value.value;
@@ -163,11 +172,9 @@ const handleNodeClick = (data, node) => {
     console.error("节点数据为空");
     return;
   }
-
   // 获取当前选中的数据源ID
   const datasourceId = getDatasourceId();
   if (!datasourceId) return
-
   // 获取点击的节点标签（表名或列名）
   const label = data.label;
   if (!label) {
@@ -186,7 +193,7 @@ const handleNodeClick = (data, node) => {
   state.executeForm.database = parentInfo;
   state.sql = `SELECT * FROM ${label};`
 };
-// 根据表名执行 sql 查询
+// 更新 getSqlData 函数
 const getSqlData = (datasource_id, database, sql) => {
   loading.value = true;
   const params = {
@@ -195,37 +202,43 @@ const getSqlData = (datasource_id, database, sql) => {
     sql
   };
   executingSql(params).then(response => {
-    loading.value = false;
-    console.log('response--->', response);
-    // 提取表头和数据
-    const headers = response.data.result.fields;
-    const data = response.data.result.data;
-    // 更新表头
-    tableHeaders.value = headers;
-    // 将数据转换为对象数组
-    tableData.value = data.map(row => {
-      const rowObject = {};
-      headers.forEach((header, index) => {
-        rowObject[header] = row[index];
+    // 确保 response 和 response.data 存在
+    if (response && response.data && response.data.result) {
+      const {fields, data} = response.data.result;
+      // 更新表头
+      tableHeaders.value = fields;
+      // 将数据转换为对象数组
+      tableData.value = data.map(row => {
+        const rowObject = {};
+        fields.forEach((field, index) => {
+          rowObject[field] = row[index];
+        });
+        return rowObject;
       });
-      return rowObject;
-    });
+    } else {
+      ElMessage.error("返回的数据格式不正确");
+      tableHeaders.value = [];
+      tableData.value = [];
+    }
     // 在数据更新后，重新计算表格高度
     nextTick(() => {
       calculateTableHeight();
     });
   }).catch(error => {
-    loading.value = false;
     console.error("查询出错:", error);
     ElMessage.error("查询出错: " + error.message);
+    tableHeaders.value = [];
+    tableData.value = [];
+  }).finally(() => {
+    loading.value = false;
   });
 };
+
 // 计算表格高度的函数
 const calculateTableHeight = () => {
   const containerHeight = document.querySelector('.table-container').clientHeight;
   tableMaxHeight.value = `${containerHeight}px`;
 };
-
 
 
 // 编辑器配置信息
@@ -297,6 +310,11 @@ getList();
 .el-table {
   // 确保表格填满容器
   height: 100% !important;
+
+  .cell {
+    white-space: normal;
+    line-height: 1.5;
+  }
 }
 
 // 自定义滚动条样式（可选）
