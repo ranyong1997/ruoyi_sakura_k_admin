@@ -1,17 +1,6 @@
 <template>
   <div class="app-container">
     <el-card>
-      <template #header v-if="!isView">
-        <z-detail-page-header
-            class="page-header"
-            style="margin: 5px 0;"
-            @back="goBack"
-        >
-          <template #content>
-            <span style="padding-right: 10px;">{{ route.query.editType === 'update' ? "更新" : "新增" }}</span>
-          </template>
-        </z-detail-page-header>
-      </template>
       <div class="h100">
         <ApiInfo ref="ApiInfoRef"/>
         <el-collapse-transition>
@@ -84,10 +73,9 @@
 </template>
 
 <script setup name="EditApiInfo">
-import {defineProps, nextTick, onActivated, onMounted, reactive, ref, watch} from 'vue'
+import {defineProps, ref} from 'vue'
 import {useRoute, useRouter} from "vue-router"
 import ApiInfo from './ApiInfo.vue'
-
 
 // 定义父组件传过来的值
 const props = defineProps({
@@ -104,8 +92,6 @@ const props = defineProps({
     },
   },
 });
-
-const route = useRoute();
 const router = useRouter();
 const ApiInfoRef = ref()
 const ApiRequestHeadersRef = ref()
@@ -114,11 +100,6 @@ const ApiValidatorsRef = ref()
 const ApiExtractsRef = ref()
 const ApiCodeRef = ref()
 const ApiHookRef = ref()
-
-// 返回到列表
-const goBack = () => {
-  router.push({name: 'apiInfo'})
-}
 </script>
 
 <style lang="scss" scoped>
