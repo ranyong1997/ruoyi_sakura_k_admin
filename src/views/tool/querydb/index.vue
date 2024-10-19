@@ -46,9 +46,22 @@
                         执行
                       </el-button>
                     </div>
-                    <span>3
-
-                    </span>
+                    <div class="table-container">
+                      <el-table
+                          :data="tableData"
+                          border
+                          style="width: 100%"
+                          height="100%"
+                          :max-height="tableMaxHeight">
+                        <el-table-column
+                            v-for="header in tableHeaders"
+                            :key="header"
+                            :prop="header"
+                            :label="header"
+                            min-width="150"
+                        />
+                      </el-table>
+                    </div>
                   </pane>
                 </splitpanes>
               </pane>
@@ -71,6 +84,9 @@ const loading = ref(true);
 const options = ref([]);
 const monacoEditRef = ref()
 const value = ref('');
+const tableData = ref([]);
+const tableHeaders = ref([]);
+const tableMaxHeight = ref('400px');
 const data = reactive({
   form: {},
   queryParams: {
@@ -181,11 +197,35 @@ const getSqlData = (datasource_id, database, sql) => {
   executingSql(params).then(response => {
     loading.value = false;
     console.log('response--->', response);
+    // 提取表头和数据
+    const headers = response.data.result.fields;
+    const data = response.data.result.data;
+    // 更新表头
+    tableHeaders.value = headers;
+    // 将数据转换为对象数组
+    tableData.value = data.map(row => {
+      const rowObject = {};
+      headers.forEach((header, index) => {
+        rowObject[header] = row[index];
+      });
+      return rowObject;
+    });
+    // 在数据更新后，重新计算表格高度
+    nextTick(() => {
+      calculateTableHeight();
+    });
   }).catch(error => {
     loading.value = false;
     console.error("查询出错:", error);
+    ElMessage.error("查询出错: " + error.message);
   });
 };
+// 计算表格高度的函数
+const calculateTableHeight = () => {
+  const containerHeight = document.querySelector('.table-container').clientHeight;
+  tableMaxHeight.value = `${containerHeight}px`;
+};
+
 
 
 // 编辑器配置信息
@@ -204,7 +244,6 @@ const state = reactive({
 const execute = () => {
   getSqlData(state.executeForm.datasource_id, state.executeForm.database, state.sql)
 }
-
 getList();
 </script>
 
@@ -244,10 +283,34 @@ getList();
   height: 500px;
 }
 
-.db-query-top-bar {
-  flex: none;
-  display: flex;
-  border-bottom: 1px solid #dee2ea;
-  padding-bottom: 10px;
+//.db-query-top-bar {
+//  flex: none;
+//  display: flex;
+//  border-bottom: 1px solid #dee2ea;
+//  padding-bottom: 10px;
+//}
+.table-container {
+  height: calc(100% - 40px); // 减去顶部按钮的高度
+  overflow: hidden;
+}
+
+.el-table {
+  // 确保表格填满容器
+  height: 100% !important;
+}
+
+// 自定义滚动条样式（可选）
+.el-table__body-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 4px;
+}
+
+.el-table__body-wrapper::-webkit-scrollbar-track {
+  background-color: #f2f6fc;
 }
 </style>
