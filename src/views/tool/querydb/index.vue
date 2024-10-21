@@ -31,6 +31,11 @@
                 />
               </pane>
               <pane>
+                <div class="db-query-top-bar">
+                  <el-button link type="primary" @click="execute">
+                    执行
+                  </el-button>
+                </div>
                 <splitpanes :push-other-panes="false" horizontal>
                   <pane size="45">
                     <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}"
@@ -38,19 +43,11 @@
                                      :executeHandle="execute"/>
                   </pane>
                   <pane>
-                    <div class="db-query-top-bar">
-                      <el-button link type="primary" @click="execute">
-                        <el-icon>
-                          <ele-CaretRight/>
-                        </el-icon>
-                        执行
-                      </el-button>
-                    </div>
                     <div class="table-container">
                       <el-table
                           :data="tableData"
                           border
-                          style="width: 100%"
+                          style="width: 1000%"
                           height="100%"
                           :max-height="tableMaxHeight">
                         <el-table-column
@@ -201,38 +198,38 @@ const getSqlData = (datasource_id, database, sql) => {
     database,
     sql
   };
-  executingSql(params).then(response => {
-    // 确保 response 和 response.data 存在
-    if (response && response.data && response.data.result) {
-      const {fields, data} = response.data.result;
-      // 更新表头
-      tableHeaders.value = fields;
-      // 将数据转换为对象数组
-      tableData.value = data.map(row => {
-        const rowObject = {};
-        fields.forEach((field, index) => {
-          rowObject[field] = row[index];
+  executingSql(params)
+      .then(response => {
+        // 确保 response 和 response.data 存在
+        if (response && response.data && response.data.result) {
+          const {fields, data} = response.data.result;
+          // 更新表头
+          tableHeaders.value = fields;
+          // 将数据转换为对象数组
+          tableData.value = data.map(row => {
+            const rowObject = {};
+            fields.forEach((field, index) => {
+              rowObject[field] = row[index];
+            });
+            return rowObject;
+          });
+        } else {
+          ElMessage.error("返回的数据格式不正确");
+        }
+        // 在数据更新后，重新计算表格高度
+        nextTick(() => {
+          calculateTableHeight();
         });
-        return rowObject;
+      })
+      .catch(error => {
+        tableHeaders.value = [];
+        tableData.value = [];
+      })
+      .finally(() => {
+        loading.value = false;
       });
-    } else {
-      ElMessage.error("返回的数据格式不正确");
-      tableHeaders.value = [];
-      tableData.value = [];
-    }
-    // 在数据更新后，重新计算表格高度
-    nextTick(() => {
-      calculateTableHeight();
-    });
-  }).catch(error => {
-    console.error("查询出错:", error);
-    ElMessage.error("查询出错: " + error.message);
-    tableHeaders.value = [];
-    tableData.value = [];
-  }).finally(() => {
-    loading.value = false;
-  });
 };
+
 
 // 计算表格高度的函数
 const calculateTableHeight = () => {
@@ -255,6 +252,16 @@ const state = reactive({
 
 // 组合数据源、数据库、sql语句进行 sql 操作
 const execute = () => {
+  if (!state.executeForm.datasource_id) {
+    ElMessage.warning("请选择对应数据源！");
+    return;
+  } else if (!state.executeForm.database) {
+    ElMessage.warning("请选择对应数据库！");
+    return;
+  }else if (!state.sql) {
+    ElMessage.warning("请输入sql语句！");
+    return;
+  }
   getSqlData(state.executeForm.datasource_id, state.executeForm.database, state.sql)
 }
 getList();
