@@ -5,12 +5,12 @@
         <div class="api-case__method" style="padding-left: 5px">
           <el-input
               size="default"
-              v-model="state.form.url"
+              v-model="state.form.api_url"
               placeholder="请输入请求路径"
               class="input-with-select"
           >
             <template #prepend>
-              <el-select v-model="state.form.method"
+              <el-select v-model="state.form.api_method"
                          size="default"
                          ref="methodRef"
                          placeholder=""
@@ -47,32 +47,27 @@
                :rules="state.rules">
         <el-row :gutter="24">
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="接口名称" prop="name">
-              <el-input v-model.trim="state.form.name"
+            <el-form-item label="接口名称" prop="api_name">
+              <el-input v-model.trim="state.form.api_name"
                         style="width: 100%;"
                         clearable
                         placeholder="请输入接口名称"></el-input>
             </el-form-item>
-
           </el-col>
-
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-
-            <el-form-item label="项目/模块" prop="project_id">
+            <el-form-item label="项目" prop="project_id">
               <el-cascader v-model="state.form.project_module"
-                           :props="{label:'name', value:'id'}"
+                           :props="{label:'api_name', value:'api_id'}"
                            :options="state.projectTree"
                            filterable
                            style="width: 100%"
                            @change="projectModuleChange"/>
             </el-form-item>
           </el-col>
-
           <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-
             <el-form-item label="接口标签" prop="tag">
               <el-tag
-                  v-for="tag in state.form.tags"
+                  v-for="tag in state.form.api_tags"
                   :key="tag"
                   size="default"
                   type="success"
@@ -82,7 +77,6 @@
                   @close="removeTag(tag)"
               >{{ tag }}
               </el-tag>
-
               <el-input
                   v-if="state.editTag"
                   ref="caseTagInputRef"
@@ -97,7 +91,6 @@
                 + New Tag
               </el-button>
             </el-form-item>
-
           </el-col>
 
           <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
@@ -175,6 +168,7 @@
 <script setup name="apiInfo">
 import {nextTick, onMounted, reactive, ref} from "vue";
 import {ElMessage} from "element-plus";
+import {listProject} from "@/api/project/project";
 
 // emit
 const emit = defineEmits(["saveOrUpdateOrDebug"])
@@ -186,17 +180,13 @@ const caseTagInputRef = ref()
 const createForm = () => {
   return {
     env_id: null,
-    id: null,
-    method: 'POST',
-    name: '',
-    url: '',
-    ssl: false,
-    code_id: null,
-    code: '',
-    project_module: [],
+    api_id: null,
+    api_method: 'POST',
+    api_name: '',
+    api_url: '',
     project_id: null,
-    module_id: null,
-    tags: [],
+    project_module: [],
+    api_tags: [],
     priority: 3,
     remarks: "",
   }
@@ -213,45 +203,52 @@ const state = reactive({
   // 表单及校验
   form: createForm(),
   rules: {
-    name: [{required: true, message: '请输入用例名', trigger: 'blur'}],
+    api_name: [{required: true, message: '请输入用例名', trigger: 'blur'}],
     project_id: [{required: true, message: '请选择所属项目', trigger: 'blur'}],
-    module_id: [{required: true, message: '请选择所属模块', trigger: 'blur'}],
   },
-  // project
+  // 获取项目树
   projectTree: [],
   projectQuery: {
     page: 1,
     pageSize: 1000,
   },
-  // module
-  moduleList: [],
-  moduleQuery: {
-    page: 1,
-    pageSize: 1000,
-    project_id: null,
-  },
-
   // url
   methodList: ['POST', "GET", "PUT", "DELETE"],
-
   // env
   showEnvPage: false,
   envList: []
-
 });
+
 // 初始化表单
 const setData = (formData) => {
   state.form = createForm()
   if (formData) {
     state.form = {...state.form, ...formData}
-    state.form.project_module = [state.form.project_id, state.form.module_id]
+    state.form.project_module = formData.project_id ? [formData.project_id] : []
     if (!state.form.tags) state.form.tags = []
     if (formData.project_id) {
       state.moduleQuery.project_id = formData.project_id
-      getModuleList()
     }
   }
-  methodChange(state.form.method)
+  methodChange(state.form.api_method)
+}
+
+// 获取项目数据
+const fetchProjectData = async () => {
+  try {
+    const response = await listProject(state.projectQuery)
+    state.projectTree = response.map(item => ({
+      id: item.id,
+      name: item.name,
+      children: [{
+        id: item.id,
+        name: item.project_name
+      }]
+    }))
+    console.log('projectTree:', state.projectTree) // 添加这行
+  } catch (error) {
+    console.error('获取项目数据失败:', error)
+  }
 }
 
 // 获取表单数据
@@ -260,8 +257,12 @@ const getData = () => {
 }
 
 const projectModuleChange = (value) => {
-  state.form.project_id = value[0]
-  state.form.module_id = value[1]
+  console.log('选中的值:', value)
+  if (value && value.length > 0) {
+    state.form.project_id = value[value.length - 1]
+  } else {
+    state.form.project_id = null
+  }
 }
 
 // tags
@@ -291,11 +292,11 @@ const handleDebug = () => {
 
 // 保存，或调试用例
 const saveOrUpdateOrDebug = (handleType = 'save') => {
-  if (!state.form.url) {
+  if (!state.form.api_url) {
     ElMessage.warning('请填写请求地址信息!');
     return
   }
-  if (!state.form.method) {
+  if (!state.form.api_method) {
     ElMessage.warning('请选择请求方式！');
     return
   }
@@ -314,11 +315,12 @@ const saveOrUpdateOrDebug = (handleType = 'save') => {
 }
 
 onMounted(() => {
-
+  fetchProjectData()
 })
 
 
 defineExpose({
+  projectModuleChange,
   setData,
   getData,
 })
