@@ -123,31 +123,31 @@
             </el-form-item>
           </el-col>
 
-          <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+          <!-- <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 
-          </el-col>
+          </el-col> -->
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="创建用户" prop="createBy">
-              <strong>{{ state.form.createBy }}</strong>
+              <strong>{{ tableData.createBy }}</strong>
             </el-form-item>
           </el-col>
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="创建时间" prop="">
-              <strong>{{ state.form.createTime }}</strong>
+              <strong>{{ tableData.createTime }}</strong>
             </el-form-item>
           </el-col>
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="更新用户" prop="" style="width: 100%;">
-              <strong>{{ state.form.updateBy }}</strong>
+              <strong>{{ tableData.updateBy }}</strong>
             </el-form-item>
           </el-col>
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="更新时间" prop="" style="width: 100%;">
-              <strong>{{ state.form.updateTime }}</strong>
+              <strong>{{ tableData.updateTime }}</strong>
             </el-form-item>
           </el-col>
         </el-row>
@@ -173,6 +173,7 @@ import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
 import {addApi, listApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
+import {formatDate} from '@/components/monaco/formatTime';
 
 // emit
 const emit = defineEmits(["saveOrUpdateOrDebug"])
@@ -295,6 +296,13 @@ const handleDebug = () => {
   state.showEnvPage = true
 }
 
+const tableData = ref({
+  createBy:undefined,
+  createTime:undefined,
+  updateBy:undefined,
+  updateTime:undefined,
+})
+
 // 保存，或调试用例
 const saveOrUpdateOrDebug = async (handleType = 'save') => {
   // 表单验证
@@ -318,7 +326,13 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       const response = await addApi({
         ...state.form  // 传递表单数据
       });
-      await listApi(state.apiQuery)
+      let res = await listApi(state.apiQuery)
+      if(res && res.rows && Array.isArray(res.rows)){
+        tableData.value = res.rows[0];
+        tableData.value.createTime = formatDate(new Date(res.rows[0].createTime),"YYYY-mm-dd HH:MM:SS");
+        tableData.value.updateTime = formatDate(new Date(res.rows[0].updateTime),"YYYY-mm-dd HH:MM:SS");
+      }
+      
       if (response.code === 200) { // 根据你的接口返回码判断
         ElMessage.success('保存成功');
         emit('saveOrUpdateOrDebug', 'save');
