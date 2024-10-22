@@ -56,12 +56,14 @@
           </el-col>
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="项目" prop="project_id">
-              <el-cascader v-model="state.form.project_module"
-                           :props="{label:'api_name', value:'api_id'}"
-                           :options="state.projectTree"
-                           filterable
-                           style="width: 100%"
-                           @change="projectModuleChange"/>
+              <el-cascader
+                  v-model="state.form.project_module"
+                  :props="{ label: 'api_name', value: 'api_id' }"
+                  :options="state.projectTree"
+                  filterable
+                  style="width: 100%"
+                  @change="projectModuleChange"
+              />
             </el-form-item>
           </el-col>
           <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
@@ -237,15 +239,13 @@ const setData = (formData) => {
 const fetchProjectData = async () => {
   try {
     const response = await listProject(state.projectQuery)
-    state.projectTree = response.map(item => ({
-      id: item.id,
-      name: item.name,
-      children: [{
-        id: item.id,
-        name: item.project_name
-      }]
+    // 使用 response.rows 来获取数组数据
+    state.projectTree = response.rows.map(item => ({
+      api_id: item.projectId,    // 对应 :props 中的 value
+      api_name: item.projectName, // 对应 :props 中的 label
+      children: []  // 如果需要子节点可以在这里添加
     }))
-    console.log('projectTree:', state.projectTree) // 添加这行
+    console.log('projectTree:', state.projectTree)
   } catch (error) {
     console.error('获取项目数据失败:', error)
   }
@@ -257,7 +257,6 @@ const getData = () => {
 }
 
 const projectModuleChange = (value) => {
-  console.log('选中的值:', value)
   if (value && value.length > 0) {
     state.form.project_id = value[value.length - 1]
   } else {
