@@ -74,7 +74,6 @@
 
 <script setup name="EditApiInfo">
 import {defineProps, ref} from 'vue'
-import {useRoute, useRouter} from "vue-router"
 import ApiInfo from './ApiInfo.vue'
 
 // 定义父组件传过来的值
@@ -92,7 +91,6 @@ const props = defineProps({
     },
   },
 });
-const router = useRouter();
 const ApiInfoRef = ref()
 const ApiRequestHeadersRef = ref()
 const ApiVariablesRef = ref()
