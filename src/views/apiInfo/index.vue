@@ -269,7 +269,6 @@ import {
   testApiById,
   updateApi,
 } from "@/api/apiInfo/apiInfo";
-import {listProject} from "@/api/project/project";
 import EditApi from "./components/EditApi.vue";
 
 const {proxy} = getCurrentInstance();
@@ -458,7 +457,6 @@ function handleSelectionChange(selection) {
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
-  listProject()
   open.value = true;
   title.value = "添加接口";
 }
@@ -479,7 +477,6 @@ function handleUpdate(row) {
   reset();
   const apiId = row.apiId || ids.value;
   getApiById(apiId).then((response) => {
-    listProject()
     form.value = response.data;
     open.value = true;
     title.value = "修改接口";
