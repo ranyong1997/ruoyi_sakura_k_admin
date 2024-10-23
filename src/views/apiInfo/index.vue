@@ -116,9 +116,8 @@
           :show-overflow-tooltip="true"
       >
         <template #default="scope">
-          <el-tag :type="getTagMethod(scope.row.apiMethod)">{{
-              scope.row.apiMethod
-            }}
+          <el-tag :type="getTagMethod(scope.row.apiMethod)">
+            {{ scope.row.apiMethod }}
           </el-tag>
         </template>
       </el-table-column>
@@ -135,9 +134,8 @@
           :show-overflow-tooltip="true"
       >
         <template #default="scope">
-          <el-tag :type="getTagLevel(scope.row.apiLevel)">{{
-              scope.row.apiLevel
-            }}
+          <el-tag :type="getTagLevel(scope.row.apiLevel)">
+            {{ scope.row.apiLevel }}
           </el-tag>
         </template>
       </el-table-column>
@@ -223,15 +221,15 @@
                 v-hasPermi="['apitest:apiInfo:edit']"
             ></el-button>
           </el-tooltip>
-          <el-tooltip content="复制" placement="top">
-            <el-button
-                link
-                type="primary"
-                icon="Connection"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['apitest:apiInfo:edit']"
-            ></el-button>
-          </el-tooltip>
+          <!--          <el-tooltip content="复制" placement="top">-->
+          <!--            <el-button-->
+          <!--                link-->
+          <!--                type="primary"-->
+          <!--                icon="Connection"-->
+          <!--                @click="handleUpdate(scope.row)"-->
+          <!--                v-hasPermi="['apitest:apiInfo:edit']"-->
+          <!--            ></el-button>-->
+          <!--          </el-tooltip>-->
           <el-tooltip content="删除" placement="top">
             <el-button
                 link
@@ -244,7 +242,6 @@
         </template>
       </el-table-column>
     </el-table>
-
     <pagination
         v-show="total > 0"
         :total="total"
@@ -252,15 +249,20 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
     />
-
-    <!-- 添加或修改接口目对话框 -->
+    <!-- 添加或修改接口对话框 -->
     <el-drawer v-model="open" size="80%" :title="title" direction="rtl">
-      <EditApi></EditApi>
+      <EditApi
+          ref="editApiRef"
+          :formData="form"
+          @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"
+      >
+      </EditApi>
     </el-drawer>
   </div>
 </template>
 
 <script setup name="Api">
+import {ref, getCurrentInstance, reactive, computed, nextTick} from 'vue'
 import {
   addApi,
   delApi,
@@ -272,6 +274,7 @@ import {
 import EditApi from "./components/EditApi.vue";
 
 const {proxy} = getCurrentInstance();
+const editApiRef = ref(null);
 const {sys_normal_disable} = proxy.useDict("sys_normal_disable");
 const apiList = ref([]);
 const open = ref(false);
@@ -282,24 +285,6 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
-const select_apiLevel = [
-  {
-    value: "P0",
-    label: "P0",
-  },
-  {
-    value: "P1",
-    label: "P1",
-  },
-  {
-    value: "P2",
-    label: "P2",
-  },
-  {
-    value: "P3",
-    label: "P3",
-  },
-];
 const expression = ref("");
 
 const getTagMethod = computed(() => (method) => {
@@ -410,11 +395,14 @@ function getList() {
   });
 }
 
-/** 取消按钮 */
-function cancel() {
-  open.value = false;
-  reset();
-}
+const props = defineProps({
+  formData: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const emit = defineEmits(['saveOrUpdateOrDebug'])
 
 /** 表单重置 */
 function reset() {
@@ -457,11 +445,31 @@ function handleSelectionChange(selection) {
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
+  form.value = {
+    apiId: undefined,
+    apiName: undefined,
+    projectId: undefined,
+    apiMethod: undefined,
+    apiUrl: undefined,
+    apiStatus: undefined,
+    apiLevel: undefined,
+    apiTags: undefined,
+    requestDataType: undefined,
+    requestData: undefined,
+    requestHeaders: undefined,
+    remark: undefined,
+  };
   open.value = true;
   title.value = "添加接口";
+  // 确保在下一个 tick 中重置编辑组件
+  nextTick(() => {
+    if (editApiRef.value) {
+      editApiRef.value.setData(form.value);
+    }
+  });
 }
 
-/** 修改按钮操作 */
+/** 运行按钮操作 */
 function handleDebug(row) {
   reset();
   const apiId = row.apiId || ids.value;
@@ -480,43 +488,50 @@ function handleUpdate(row) {
     form.value = response.data;
     open.value = true;
     title.value = "修改接口";
-  });
-}
-
-/** 提交按钮 */
-function submitForm() {
-  proxy.$refs["ApiRef"].validate((valid) => {
-    if (valid) {
-      if (form.value.apiId != undefined) {
-        updateApi(form.value).then((response) => {
-          proxy.$modal.msgSuccess("修改成功");
-          open.value = false;
-          getList();
-        });
-      } else {
-        addApi(form.value).then((response) => {
-          proxy.$modal.msgSuccess("新增成功");
-          open.value = false;
-          getList();
-        });
+    // 确保在下一个 tick 中设置数据
+    nextTick(() => {
+      if (editApiRef.value) {
+        editApiRef.value.setData(form.value);
       }
-    }
+    });
   });
 }
 
-/** 测试连接按钮 */
-const testApi = () => {
-  proxy.$refs["ApiRef"].validate((valid) => {
-    if (valid) {
-      if (form.value.apiId) {
-        testApiById(form.value.apiId).then((response) => {
-          proxy.$modal.msgSuccess("执行成功~");
-        });
+// 处理子组件的保存/调试事件
+const handleSaveOrUpdateOrDebug = async (type, formData) => {
+  if (type === 'save') {
+    try {
+      // 获取当前表单数据
+      const currentFormData = formData || form.value;
+      // 检查是否存在 apiId
+      if (currentFormData.apiId) {
+        // 如果有 apiId，调用更新接口
+        await updateApi(currentFormData);
+        proxy.$modal.msgSuccess("修改成功");
+      } else {
+        // 如果没有 apiId，调用新增接口
+        await addApi(currentFormData);
+        proxy.$modal.msgSuccess("新增成功");
+      }
+      open.value = false; // 关闭抽屉
+    } catch (error) {
+      console.error('Save/Update Error:', error);
+      proxy.$modal.msgError("操作失败：" + (error.message || '未知错误'));
+    }
+  } else if (type === 'debug') {
+    try {
+      const currentFormData = formData || form.value;
+      if (currentFormData.apiId) {
+        await testApiById(currentFormData.apiId);
+        proxy.$modal.msgSuccess("执行成功");
       } else {
         proxy.$modal.msgWarning("请先保存接口再进行测试");
       }
+    } catch (error) {
+      console.error('Debug Error:', error);
+      proxy.$modal.msgError("测试失败：" + (error.message || '未知错误'));
     }
-  });
+  }
 };
 
 /** 删除按钮操作 */
