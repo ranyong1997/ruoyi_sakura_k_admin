@@ -2,7 +2,9 @@
   <div class="app-container">
     <el-card>
       <div class="h100">
-        <ApiInfo ref="ApiInfoRef"/>
+        <ApiInfo ref="ApiInfoRef"
+                 :formData="formData"
+                 @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
         <el-collapse-transition>
           <div>
             <el-card>
@@ -78,19 +80,12 @@ import ApiInfo from './ApiInfo.vue'
 
 // 定义父组件传过来的值
 const props = defineProps({
-  api_id: {
-    type: [String, Number],
-    default: () => {
-      return null;
-    },
-  },
-  isView: {
-    type: Boolean,
-    default: () => {
-      return false;
-    },
-  },
-});
+  formData: {
+    type: Object,
+    default: () => ({})
+  }
+})
+const emit = defineEmits(['saveOrUpdateOrDebug'])
 const ApiInfoRef = ref()
 const ApiRequestHeadersRef = ref()
 const ApiVariablesRef = ref()
@@ -98,6 +93,23 @@ const ApiValidatorsRef = ref()
 const ApiExtractsRef = ref()
 const ApiCodeRef = ref()
 const ApiHookRef = ref()
+
+const handleSaveOrUpdateOrDebug = (type) => {
+  emit('saveOrUpdateOrDebug', type)
+}
+
+const setData = (data) => {
+  ApiInfoRef.value?.setData(data)
+}
+
+const getData = () => {
+  return ApiInfoRef.value?.getData()
+}
+
+defineExpose({
+  setData,
+  getData
+})
 </script>
 
 <style lang="scss" scoped>

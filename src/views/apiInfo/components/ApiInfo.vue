@@ -168,10 +168,10 @@
 </template>
 
 <script setup name="apiInfo">
-import {nextTick, onMounted, reactive, ref} from "vue";
+import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
-import {addApi, listApi} from "@/api/apiInfo/apiInfo";
+import {addApi,updateApi, listApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
 import {formatDate} from '@/components/monaco/formatTime';
 
@@ -224,15 +224,40 @@ const state = reactive({
   apiLevel: ['P0', "P1", "P2", "P3"]
 });
 
+const props = defineProps({
+  formData: {
+    type: Object,
+    default: () => ({})
+  }
+});
+
+// 监听 formData 的变化
+watch(() => props.formData, (newVal) => {
+  if (newVal) {
+    setData(newVal);
+  }
+}, { deep: true });
+
 // 初始化表单
 const setData = (formData) => {
   state.form = createForm()
   if (formData) {
-    state.form = {...state.form, ...formData}
-    state.form.project_module = formData.projectId ? [formData.projectId] : []
-    if (!state.form.apiTags) state.form.tags = []
+    state.form = {
+      ...state.form,
+      ...JSON.parse(JSON.stringify(formData)),
+      apiMethod: formData.apiMethod || 'POST',
+      apiName: formData.apiName || '',
+      apiUrl: formData.apiUrl || '',
+      projectId: formData.projectId || null,
+      apiTags: formData.apiTags || [],
+      apiLevel: formData.apiLevel || 'P0',
+      remark: formData.remark || "",
+    };
+    state.form.project_module = formData.projectId ? [formData.projectId] : [];
   }
-  methodChange(state.form.apiMethod)
+    nextTick(() => {
+    methodChange(state.form.apiMethod);
+  });
 }
 
 const methodChange = (method) => {
@@ -297,10 +322,10 @@ const handleDebug = () => {
 }
 
 const tableData = ref({
-  createBy:undefined,
-  createTime:undefined,
-  updateBy:undefined,
-  updateTime:undefined,
+  createBy: undefined,
+  createTime: undefined,
+  updateBy: undefined,
+  updateTime: undefined,
 })
 
 // 保存，或调试用例
@@ -327,12 +352,12 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
         ...state.form  // 传递表单数据
       });
       let res = await listApi(state.apiQuery)
-      if(res && res.rows && Array.isArray(res.rows)){
+      if (res && res.rows && Array.isArray(res.rows)) {
         tableData.value = res.rows[0];
-        tableData.value.createTime = formatDate(new Date(res.rows[0].createTime),"YYYY-mm-dd HH:MM:SS");
-        tableData.value.updateTime = formatDate(new Date(res.rows[0].updateTime),"YYYY-mm-dd HH:MM:SS");
+        tableData.value.createTime = formatDate(new Date(res.rows[0].createTime), "YYYY-mm-dd HH:MM:SS");
+        tableData.value.updateTime = formatDate(new Date(res.rows[0].updateTime), "YYYY-mm-dd HH:MM:SS");
       }
-      
+
       if (response.code === 200) { // 根据你的接口返回码判断
         ElMessage.success('保存成功');
         emit('saveOrUpdateOrDebug', 'save');
@@ -355,9 +380,9 @@ onMounted(() => {
 
 
 defineExpose({
-  projectModuleChange,
   setData,
   getData,
+  projectModuleChange
 })
 
 </script>
