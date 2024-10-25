@@ -31,19 +31,13 @@
                 />
               </pane>
               <pane>
-                <div class="db-query-top-bar">
-                  <el-button link type="primary" @click="execute">
-                    执行
-                  </el-button>
-                </div>
                 <splitpanes :push-other-panes="false" horizontal>
-                  <pane size="45">
-                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}"
-                                     v-model:value="state.sql" v-model:lang="state.lang"
-                                     :executeHandle="execute"/>
+                  <pane size="45" class="operate-pane">
+                    <el-button text type="primary" @click="execute"> 执行 </el-button>
+                    <z-monaco-editor ref="monacoEditRef" :style="{height: state.height + 'px'}" v-model:value="state.sql" v-model:lang="state.lang" :executeHandle="execute"/>
                   </pane>
                   <pane>
-                    <div class="table-container">
+                    <div class="table-container" v-show="tableData.length > 0">
                       <el-table
                           :data="tableData"
                           border
@@ -275,11 +269,14 @@ getList();
 .splitpanes__pane {
   display: flex;
 }
-
-// 树
-.splitpanes__pane-tree {
-  overflow: auto;
-  align-items: baseline;
+// 执行按钮
+.operate-pane {
+  flex-direction: column;
+  .el-button {
+    align-self: baseline;
+    margin-left: 10px;
+    margin-bottom: 8px;
+  }
 }
 
 // 树
@@ -288,13 +285,21 @@ getList();
   align-items: baseline;
 }
 
-.splitpanes--vertical > .splitpanes__splitter {
-  min-width: 6px;
+// 树
+.splitpanes__pane-tree {
+  overflow: auto;
+  align-items: baseline;
+}
+
+:deep(.splitpanes--vertical > .splitpanes__splitter) {
+  min-width: 3px;
+  margin: 0 3px;
   background: linear-gradient(90deg, #ccc, #111);
 }
 
-.splitpanes--horizontal > .splitpanes__splitter {
-  min-height: 6px;
+:deep(.splitpanes--horizontal > .splitpanes__splitter) {
+  min-height: 3px;
+  margin: 3px 0;
   background: linear-gradient(0deg, #ccc, #111);
 }
 
