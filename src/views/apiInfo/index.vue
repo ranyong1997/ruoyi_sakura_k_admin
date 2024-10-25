@@ -506,14 +506,15 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
       // 检查是否存在 apiId
       if (currentFormData.apiId) {
         // 如果有 apiId，调用更新接口
-        await updateApi(currentFormData);
-        proxy.$modal.msgSuccess("修改成功");
+        // await updateApi(currentFormData);
+        // proxy.$modal.msgSuccess("修改成功");
+        open.value = false; // 关闭抽屉
       } else {
         // 如果没有 apiId，调用新增接口
-        await addApi(currentFormData);
-        proxy.$modal.msgSuccess("新增成功");
+        // await addApi(currentFormData);
+        // proxy.$modal.msgSuccess("新增成功");
       }
-      open.value = false; // 关闭抽屉
+      getList();
     } catch (error) {
       console.error('Save/Update Error:', error);
       proxy.$modal.msgError("操作失败：" + (error.message || '未知错误'));
