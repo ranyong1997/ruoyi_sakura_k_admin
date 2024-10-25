@@ -347,10 +347,16 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
   }
   try {
     if (handleType === 'save') {
-      // 调用保存接口
-      const response = await addApi({
-        ...state.form  // 传递表单数据
-      });
+      let response = null,msg = undefined;
+      if(state.form.apiId != null){
+        response = await updateApi(state.form);
+        msg = '编辑成功'
+      }else{
+        response = await addApi(state.form);
+        msg = '新增成功'
+      }
+      if(response == null) return;
+      
       let res = await listApi(state.apiQuery)
       if (res && res.rows && Array.isArray(res.rows)) {
         tableData.value = res.rows[0];
@@ -359,7 +365,7 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       }
 
       if (response.code === 200) { // 根据你的接口返回码判断
-        ElMessage.success('保存成功');
+        ElMessage.success(msg);
         emit('saveOrUpdateOrDebug', 'save');
       } else {
         ElMessage.error(response.message || '保存失败');
