@@ -502,19 +502,6 @@ function handleUpdate(row) {
 const handleSaveOrUpdateOrDebug = async (type, formData) => {
   if (type === 'save') {
     try {
-      // 获取当前表单数据
-      const currentFormData = formData || form.value;
-      // 检查是否存在 apiId
-      if (currentFormData.apiId) {
-        // 如果有 apiId，调用更新接口
-        // await updateApi(currentFormData);
-        // proxy.$modal.msgSuccess("修改成功");
-        open.value = false; // 关闭抽屉
-      } else {
-        // 如果没有 apiId，调用新增接口
-        // await addApi(currentFormData);
-        // proxy.$modal.msgSuccess("新增成功");
-      }
       getList();
     } catch (error) {
       console.error('Save/Update Error:', error);
@@ -526,8 +513,6 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
       if (currentFormData.apiId) {
         await testApiById(currentFormData.apiId);
         proxy.$modal.msgSuccess("执行成功");
-      } else {
-        proxy.$modal.msgWarning("请先保存接口再进行测试");
       }
     } catch (error) {
       console.error('Debug Error:', error);

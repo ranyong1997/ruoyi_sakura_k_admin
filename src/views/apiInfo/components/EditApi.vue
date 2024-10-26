@@ -5,70 +5,37 @@
         <ApiInfo ref="ApiInfoRef"
                  :formData="formData"
                  @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
-        <el-collapse-transition>
-          <div>
-            <el-card>
-              <template #header>
-                <strong>Request</strong>
-              </template>
-              <div style="min-height: 500px">
-                <el-tabs style="overflow-y: auto">
-                  <el-tab-pane name='ApiRequestBody'>
-                    <template #label>
-                      <strong>请求体</strong>
-                    </template>
-                  </el-tab-pane>
-                  <el-tab-pane name='ApiRequestHeaders'>
-                    <template #label>
-                      <strong>请求头</strong>
-                    </template>
-                    <div class="case-tabs">
-                      <ApiRequestHeaders ref="ApiRequestHeadersRef"/>
-                    </div>
-                  </el-tab-pane>
-
-                  <el-tab-pane name='ApiVariables'>
-                    <template #label>
-                      <strong>变量</strong>
-                    </template>
-                    <div class="case-tabs">
-                      <ApiVariables ref="ApiVariablesRef"/>
-                    </div>
-                  </el-tab-pane>
-                  <el-tab-pane name='extracts' class="h100">
-                    <template #label>
-                      <strong>提取</strong>
-                    </template>
-                    <div class="case-tabs">
-                      <ApiExtracts ref="ApiExtractsRef"/>
-                    </div>
-                  </el-tab-pane>
-
-                  <el-tab-pane name='Code' class="h100">
-                    <template #label>
-                      <strong>Code</strong>
-                    </template>
-                    <ApiCode ref="ApiCodeRef"/>
-                  </el-tab-pane>
-                  <el-tab-pane name='Hook' class="h100">
-                    <template #label>
-                      <strong>Hook</strong>
-                    </template>
-                    <ApiHooks ref="ApiHookRef"/>
-                  </el-tab-pane>
-                  <el-tab-pane name='assertController' class="h100">
-                    <template #label>
-                      <strong>断言规则</strong>
-                    </template>
-                    <div class="case-tabs">
-                      <ApiValidators ref="ApiValidatorsRef"/>
-                    </div>
-                  </el-tab-pane>
-                </el-tabs>
-              </div>
-            </el-card>
-          </div>
-        </el-collapse-transition>
+        <div>
+          <el-card>
+            <template #header>
+              <strong>Request</strong>
+            </template>
+            <div style="min-height: 500px">
+              <el-tabs style="overflow-y: auto">
+                <el-tab-pane name='ApiRequestBody'>
+                  <template #label>
+                    <strong>请求体</strong>
+                    <span class="ui-badge-status-dot" v-show="getDataLength('body')"></span>
+                  </template>
+                  <div class="case-tabs">
+                    <ApiRequestBody ref="ApiRequestBodyRef" @updateContentType="updateContentType"/>
+                  </div>
+                </el-tab-pane>
+                <el-tab-pane name='ApiRequestHeaders'>
+                  <template #label>
+                    <strong>请求头</strong>
+                    <span class="ui-badge-circle" v-show="getDataLength('header')">{{
+                        getDataLength('header')
+                      }}</span>
+                  </template>
+                  <div class="case-tabs">
+                    <ApiRequestHeaders ref="ApiRequestHeadersRef"/>
+                  </div>
+                </el-tab-pane>
+              </el-tabs>
+            </div>
+          </el-card>
+        </div>
       </div>
     </el-card>
   </div>
@@ -77,7 +44,8 @@
 <script setup name="EditApiInfo">
 import {defineProps, ref} from 'vue'
 import ApiInfo from './ApiInfo.vue'
-
+import ApiRequestBody from './ApiRequestBody.vue'
+import ApiRequestHeaders from './ApiRequestHeaders.vue'
 // 定义父组件传过来的值
 const props = defineProps({
   formData: {
@@ -104,6 +72,27 @@ const setData = (data) => {
 
 const getData = () => {
   return ApiInfoRef.value?.getData()
+}
+
+const getDataLength = (ref) => {
+  switch (ref) {
+    case "body":
+      return ApiRequestBodyRef?.value.getDataLength()
+    case "header":
+      return ApiRequestHeadersRef?.value.getDataLength()
+    case "variables":
+      return ApiVariablesRef.value.getDataLength()
+    case "validators":
+      return ApiValidatorsRef.value.getDataLength()
+    case "extracts":
+      return ApiExtractsRef.value.getDataLength()
+    case "hook":
+      return ApiHookRef.value.getDataLength()
+    case "code":
+      return ApiCodeRef.value.getDataLength()
+    default:
+      return 0
+  }
 }
 
 defineExpose({
