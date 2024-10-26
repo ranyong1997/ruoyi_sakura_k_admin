@@ -2,9 +2,7 @@
   <div class="app-container">
     <el-card>
       <div class="h100">
-        <ApiInfo ref="ApiInfoRef"
-                 :formData="formData"
-                 @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
+        <ApiInfo ref="ApiInfoRef" :formData="formData" @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
         <div>
           <el-card>
             <template #header>
@@ -56,11 +54,7 @@ const props = defineProps({
 const emit = defineEmits(['saveOrUpdateOrDebug'])
 const ApiInfoRef = ref()
 const ApiRequestHeadersRef = ref()
-const ApiVariablesRef = ref()
-const ApiValidatorsRef = ref()
-const ApiExtractsRef = ref()
-const ApiCodeRef = ref()
-const ApiHookRef = ref()
+const ApiRequestBodyRef = ref()
 
 const handleSaveOrUpdateOrDebug = (type) => {
   emit('saveOrUpdateOrDebug', type)
@@ -80,16 +74,6 @@ const getDataLength = (ref) => {
       return ApiRequestBodyRef?.value.getDataLength()
     case "header":
       return ApiRequestHeadersRef?.value.getDataLength()
-    case "variables":
-      return ApiVariablesRef.value.getDataLength()
-    case "validators":
-      return ApiValidatorsRef.value.getDataLength()
-    case "extracts":
-      return ApiExtractsRef.value.getDataLength()
-    case "hook":
-      return ApiHookRef.value.getDataLength()
-    case "code":
-      return ApiCodeRef.value.getDataLength()
     default:
       return 0
   }

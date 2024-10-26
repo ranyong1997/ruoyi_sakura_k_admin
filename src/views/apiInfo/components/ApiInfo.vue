@@ -36,7 +36,6 @@
         </div>
       </el-col>
     </el-row>
-
     <div class="api-case__detail">
       <el-form ref="formRef"
                :model="state.form"
@@ -206,12 +205,7 @@ const state = reactive({
   projectTree: [],
   projectQuery: {
     page: 1,
-    pageSize: 1000,
-  },
-  // 获取接口列表
-  apiQuery: {
-    pageNum: 1,
-    pageSize: 10,
+    pageSize: 1000
   },
   // url
   methodList: ['POST', "GET", "PUT", "DELETE"],
@@ -349,7 +343,7 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
         response = await addApi(state.form);
         msg = '新增成功'
       }
-      let res = await listApi(state.apiQuery)
+      let res = await listApi()
       if (res && res.rows && Array.isArray(res.rows)) {
         tableData.value = res.rows[0];
         tableData.value.createTime = formatDate(new Date(res.rows[0].createTime), "YYYY-mm-dd HH:MM:SS");
