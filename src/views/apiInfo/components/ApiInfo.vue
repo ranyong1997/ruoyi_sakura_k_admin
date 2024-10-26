@@ -55,7 +55,7 @@
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="项目" prop="projectId">
               <el-cascader
-                  v-model="state.form.project_module"
+                  v-model="state.form.projectId"
                   :props="{ label: 'apiName', value: 'apiId' }"
                   :options="state.projectTree"
                   filterable
@@ -246,13 +246,8 @@ const setData = (formData) => {
       projectId: formData.projectId || null,
       apiTags: formData.apiTags || [],
       apiLevel: formData.apiLevel || 'P0',
-      remark: formData.remark || "",
-      createBy: formData.createBy || "",
-      createTime: formData.createTime || "",
-      updateBy: formData.updateBy || "",
-      updateTime: formData.updateTime || "",
+      remark: formData.remark || ""
     };
-    state.form.project_module = formData.projectId ? [formData.projectId] : [];
   }
   nextTick(() => {
     methodChange(state.form.apiMethod);
