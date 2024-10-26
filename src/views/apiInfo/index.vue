@@ -264,15 +264,12 @@
 <script setup name="Api">
 import {ref, getCurrentInstance, reactive, computed, nextTick} from 'vue'
 import {
-  addApi,
   delApi,
   getApiById,
   listApi,
   testApiById,
-  updateApi,
 } from "@/api/apiInfo/apiInfo";
 import EditApi from "./components/EditApi.vue";
-
 const {proxy} = getCurrentInstance();
 const editApiRef = ref(null);
 const {sys_normal_disable} = proxy.useDict("sys_normal_disable");
@@ -383,7 +380,7 @@ const data = reactive({
   },
 });
 
-const {queryParams, form, rules} = toRefs(data);
+const {queryParams, form} = toRefs(data);
 
 /** 查询接口列表 */
 function getList() {
@@ -419,6 +416,10 @@ function reset() {
     requestData: undefined,
     requestHeaders: undefined,
     remark: undefined,
+    createBy: undefined,
+    createTime: undefined,
+    updateBy: undefined,
+    updateTime: undefined
   };
   proxy.resetForm("ApiRef");
 }
