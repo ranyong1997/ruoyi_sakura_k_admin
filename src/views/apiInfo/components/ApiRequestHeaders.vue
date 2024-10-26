@@ -25,7 +25,7 @@ const getStatus = () => {
   return handleEmpty(state.headers).length > 0
 }
 
-// updateHeader {key: "Content-Type", value: "application/json"} //更新请求头
+// 更新请求头
 const updateContentType = (mode, language, remove) => {
   let headerValue = ""
   switch (mode) {

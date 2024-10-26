@@ -8,19 +8,19 @@
             class="radio-group"
             @change="radioChange"
         >
-          <el-radio label="none">none</el-radio>
-          <el-radio label="form">form-data</el-radio>
-          <el-radio label="x_form">x-www-form-urlencoded</el-radio>
-          <el-radio label="json">json</el-radio>
-          <el-radio label="raw">raw</el-radio>
+          <el-radio label="0">none</el-radio>
+          <el-radio label="2">form-data</el-radio>
+          <el-radio label="3">x-www-form-urlencoded</el-radio>
+          <el-radio label="1">json</el-radio>
+          <el-radio label="4">raw</el-radio>
         </el-radio-group>
       </div>
     </div>
-    <div v-if="state.mode === 'none'" style="text-align: center; padding-top: 10px">
+    <div v-if="state.mode === '0'" style="text-align: center; padding-top: 10px">
       <span style="color: darkgray">当前请求没有请求体</span>
     </div>
     <!---------------------------form_data------------------------------------>
-    <div v-if="state.mode === 'form_data'">
+    <div v-if="state.mode === '2'">
       <div>
         <el-row justify="space-between"
                 v-for="(data, index) in state.formData"
@@ -50,41 +50,6 @@
               </el-input>
             </div>
           </el-col>
-
-          <!--参数值-->
-          <el-col :span="8">
-            <div class="file-input-container" v-if="data.type === 'file'">
-              <div class="file-input">
-                <input type="file"
-                       :id="'selectFile' + index"
-                       @change="fileChange($event, data, index)"
-                       class="file-input__native">
-                <el-button v-if="!data.value.name"
-                           type="info"
-                           size="small"
-                           @click="selectFile(index)">选择文件
-                </el-button>
-
-                <div v-else class="file-input__name">
-                  <div class="file-input__name__title" :title="data.value.name">{{ data.value.name }}</div>
-                  <el-button class="file-input__name__delete-icon"
-                             size="small"
-                             type="primary"
-                             link
-                             @click="deletedFile(data, index)">
-                    <el-icon>
-                      <ele-Close/>
-                    </el-icon>
-                  </el-button>
-                </div>
-              </div>
-            </div>
-            <el-input size="small"
-                      v-else
-                      placeholder="Value"
-                      v-model="data.value"></el-input>
-          </el-col>
-
           <el-col :span="5">
             <el-input type="primary"
                       size="small"
@@ -93,7 +58,6 @@
                       v-model="data.remarks">
             </el-input>
           </el-col>
-
           <el-col :span="1">
             <el-button type="danger" circle @click="deleteFormData(index)"
                        :disabled="state.formData.length === index  + 1 ">
@@ -106,7 +70,7 @@
       </div>
     </div>
     <!---------------------------x-www-form-urlencoded------------------------------------>
-    <div v-if="state.mode === 'x_www_form_urlencoded'">
+    <div v-if="state.mode === '3'">
       <div>
         <el-row justify="space-between"
                 v-for="(data, index) in state.x_www_form_urlencoded"
@@ -147,8 +111,8 @@
         </el-row>
       </div>
     </div>
-    <!---------------------------raw------------------------------------>
-    <div v-if="state.mode === 'raw'" style="padding-top: 8px;">
+    <!---------------------------json------------------------------------>
+    <div v-if="state.mode === '1'" style="padding-top: 8px;">
       <div style="border: 1px solid #E6E6E6">
         <z-monaco-editor
             style="height: 420px"
@@ -157,7 +121,17 @@
             v-model:lang="state.lang"
         ></z-monaco-editor>
       </div>
-
+    </div>
+    <!---------------------------raw------------------------------------>
+    <div v-if="state.mode === '4'" style="padding-top: 8px;">
+      <div style="border: 1px solid #E6E6E6">
+        <z-monaco-editor
+            style="height: 420px"
+            ref="monacoEditRef"
+            v-model:value="state.rawData"
+            v-model:lang="state.lang"
+        ></z-monaco-editor>
+      </div>
     </div>
     <!---------------------------params------------------------------------>
     <div v-if="state.mode === 'params'">
@@ -238,19 +212,15 @@ const state = reactive({
   language: 'JSON',
   languageList: ['JSON', 'Text'],
   popoverOpen: false,
-  // body
   bodyData: [],
   rawData: "",
   paramsData: [],
   dataTypeOptions: ['string', 'int', 'float', 'boolean'],
-  // formData
   formData: [],
-  formDatatypeOptions: ['text', 'file'],
+  formDatatypeOptions: ['text'],
   fileData: {},
-  // x_www_form_urlencoded
   x_www_form_urlencoded: [],
-
-  //monaco
+  //编辑器语言
   lang: 'json',
 });
 
@@ -313,7 +283,6 @@ const radioChange = (value) => {
 // 处理raw 语言
 const handleLanguage = (language) => {
   state.popoverOpen = !state.popoverOpen
-  // rawPopoverRef.value.hide()
   state.language = language
   updateContentType()
 }
@@ -374,47 +343,14 @@ const xFormDataBlur = () => {
     addXFormData()
   }
 }
-
-// 选择文件时触发，上传文件，回写地址
-const fileChange = (e, row, index) => {
-  state.fileData = e.target.files[0]
-  let file = e.target.files[0]
-  let formData = new FormData
-  // formData.append('name', file.name)
-  formData.append('file', file)
-  useFileApi().upload(formData)
-      .then((res) => {
-        row.value = res.data
-      })
-      .catch(() => {
-        let fileRef = document.getElementById('selectFile' + index)
-        if (fileRef) fileRef.value = ''
-        row.value = ""
-      })
-
-}
-// 删除文件处理
-const deletedFile = (row, index) => {
-  let fileRef = document.getElementById('selectFile' + index)
-  useFileApi().deleted({name: row.value.name})
-  row.value = {}
-  if (fileRef) fileRef.value = ''
-}
-
-// 选择文件
-const selectFile = (index) => {
-  let fileRef = document.getElementById('selectFile' + index)
-  if (fileRef) fileRef.click()
-}
-
 // 监听language 设置 long
 watch(
     () => state.language,
     (val) => {
-      if (val.toLowerCase() == 'text') {
+      if (val.toLowerCase() === 'text') {
         state.lang = 'plaintext'
       }
-      if (val.toLowerCase() == 'json') {
+      if (val.toLowerCase() === 'json') {
         state.lang = 'json'
       }
     }
@@ -467,7 +403,7 @@ const getDataLength = () => {
 defineExpose({
   setData,
   getData,
-  getDataLength,
+  getDataLength
 })
 
 </script>
@@ -497,13 +433,6 @@ defineExpose({
       height: 0;
       pointer-events: none;
     }
-
-
-    //.btn {
-    //  box-sizing: border-box;
-    //  border-radius: 4px;
-    //}
-
     .file-input__name {
       box-sizing: border-box;
       display: flex;
@@ -517,13 +446,11 @@ defineExpose({
       color: #212121;
       background-color: transparent;
       padding: 4px 2px;
-
       .file-input__name__title {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-
       .file-input__name__delete-icon {
         display: flex;
         align-items: center;
@@ -535,9 +462,7 @@ defineExpose({
     }
   }
 }
-
 :deep(.input-with-select .el-input-group__append) {
   background-color: var(--el-fill-color-blank) !important;
 }
-
 </style>
