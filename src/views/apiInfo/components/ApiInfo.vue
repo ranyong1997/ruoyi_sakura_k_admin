@@ -97,7 +97,6 @@
               >
                 {{ tag }}
               </el-tag>
-              <!-- 输入框 -->
               <el-input
                   v-if="state.editTag"
                   ref="caseTagInputRef"
@@ -123,10 +122,6 @@
             </el-form-item>
           </el-col>
 
-          <!-- <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-
-          </el-col> -->
-
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
             <el-form-item label="创建用户" prop="createBy">
               <strong>{{ tableData.createBy }}</strong>
@@ -134,19 +129,19 @@
           </el-col>
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="创建时间" prop="">
+            <el-form-item label="创建时间" prop="createTime">
               <strong>{{ tableData.createTime }}</strong>
             </el-form-item>
           </el-col>
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="更新用户" prop="" style="width: 100%;">
+            <el-form-item label="更新用户" prop="updateBy" style="width: 100%;">
               <strong>{{ tableData.updateBy }}</strong>
             </el-form-item>
           </el-col>
 
           <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="更新时间" prop="" style="width: 100%;">
+            <el-form-item label="更新时间" prop="updateTime" style="width: 100%;">
               <strong>{{ tableData.updateTime }}</strong>
             </el-form-item>
           </el-col>
@@ -171,7 +166,7 @@
 import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
-import {addApi,updateApi, listApi} from "@/api/apiInfo/apiInfo";
+import {addApi, updateApi, listApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
 import {formatDate} from '@/components/monaco/formatTime';
 
@@ -189,7 +184,7 @@ const createForm = () => {
     projectId: null,
     apiTags: [],
     apiLevel: 'P0',
-    remark: "",
+    remark: ""
   }
 }
 const state = reactive({
@@ -236,7 +231,7 @@ watch(() => props.formData, (newVal) => {
   if (newVal) {
     setData(newVal);
   }
-}, { deep: true });
+}, {deep: true});
 
 // 初始化表单
 const setData = (formData) => {
@@ -252,10 +247,14 @@ const setData = (formData) => {
       apiTags: formData.apiTags || [],
       apiLevel: formData.apiLevel || 'P0',
       remark: formData.remark || "",
+      createBy: formData.createBy || "",
+      createTime: formData.createTime || "",
+      updateBy: formData.updateBy || "",
+      updateTime: formData.updateTime || "",
     };
     state.form.project_module = formData.projectId ? [formData.projectId] : [];
   }
-    nextTick(() => {
+  nextTick(() => {
     methodChange(state.form.apiMethod);
   });
 }
@@ -322,10 +321,10 @@ const handleDebug = () => {
 }
 
 const tableData = ref({
-  createBy: undefined,
-  createTime: undefined,
-  updateBy: undefined,
-  updateTime: undefined,
+  createBy: '',
+  createTime: '',
+  updateBy: '',
+  updateTime: '',
 })
 
 // 保存，或调试用例
@@ -347,16 +346,14 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
   }
   try {
     if (handleType === 'save') {
-      let response = null,msg = undefined;
-      if(state.form.apiId != null){
+      let response = null, msg = undefined;
+      if (state.form.apiId != null) {
         response = await updateApi(state.form);
-        msg = '编辑成功'
-      }else{
+        msg = '保存成功'
+      } else {
         response = await addApi(state.form);
         msg = '新增成功'
       }
-      if(response == null) return;
-      
       let res = await listApi(state.apiQuery)
       if (res && res.rows && Array.isArray(res.rows)) {
         tableData.value = res.rows[0];
