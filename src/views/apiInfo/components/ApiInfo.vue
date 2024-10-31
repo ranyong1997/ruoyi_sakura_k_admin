@@ -117,7 +117,7 @@
                         type="textarea"
                         v-model.trim="state.form.remark"
                         style="width: 100%;"
-                        placeholder="请输入用例名称"></el-input>
+                        placeholder="请输入用例描述"></el-input>
             </el-form-item>
           </el-col>
 
