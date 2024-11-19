@@ -6,13 +6,24 @@
         <div>
           <el-card>
             <template #header>
-              <strong>Request</strong>
+              <strong>请求参数</strong>
             </template>
             <div style="min-height: 500px">
               <el-tabs style="overflow-y: auto">
+                <el-tab-pane name='ApiRequestParams'>
+                  <template #label>
+                    <strong>Params</strong>
+                    <span class="ui-badge-circle" v-show="getDataLength('header')">{{
+                        getDataLength('header')
+                      }}</span>
+                  </template>
+                  <div class="case-tabs">
+                    <ApiRequestHeaders ref="ApiRequestHeadersRef"/>
+                  </div>
+                </el-tab-pane>
                 <el-tab-pane name='ApiRequestBody'>
                   <template #label>
-                    <strong>请求体</strong>
+                    <strong>Body</strong>
                     <span class="ui-badge-status-dot" v-show="getDataLength('body')"></span>
                   </template>
                   <div class="case-tabs">
@@ -21,7 +32,18 @@
                 </el-tab-pane>
                 <el-tab-pane name='ApiRequestHeaders'>
                   <template #label>
-                    <strong>请求头</strong>
+                    <strong>Headers</strong>
+                    <span class="ui-badge-circle" v-show="getDataLength('header')">{{
+                        getDataLength('header')
+                      }}</span>
+                  </template>
+                  <div class="case-tabs">
+                    <ApiRequestHeaders ref="ApiRequestHeadersRef"/>
+                  </div>
+                </el-tab-pane>
+                <el-tab-pane name='ApiRequestCookies'>
+                  <template #label>
+                    <strong>Cookies</strong>
                     <span class="ui-badge-circle" v-show="getDataLength('header')">{{
                         getDataLength('header')
                       }}</span>
