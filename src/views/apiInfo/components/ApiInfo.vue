@@ -116,32 +116,8 @@
               <el-input size="default"
                         type="textarea"
                         v-model.trim="state.form.remark"
-                        style="width: 100%;"
+                        style="width: 50%;"
                         placeholder="请输入用例描述"></el-input>
-            </el-form-item>
-          </el-col>
-
-          <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="创建用户" prop="createBy">
-              <strong>{{ tableData.createBy }}</strong>
-            </el-form-item>
-          </el-col>
-
-          <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="创建时间" prop="createTime">
-              <strong>{{ tableData.createTime }}</strong>
-            </el-form-item>
-          </el-col>
-
-          <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="更新用户" prop="updateBy" style="width: 100%;">
-              <strong>{{ tableData.updateBy }}</strong>
-            </el-form-item>
-          </el-col>
-
-          <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-            <el-form-item label="更新时间" prop="updateTime" style="width: 100%;">
-              <strong>{{ tableData.updateTime }}</strong>
             </el-form-item>
           </el-col>
         </el-row>
@@ -342,12 +318,6 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       } else {
         response = await addApi(state.form);
         msg = '新增成功'
-      }
-      let res = await listApi()
-      if (res && res.rows && Array.isArray(res.rows)) {
-        tableData.value = res.rows[0];
-        tableData.value.createTime = formatDate(new Date(res.rows[0].createTime), "YYYY-mm-dd HH:MM:SS");
-        tableData.value.updateTime = formatDate(new Date(res.rows[0].updateTime), "YYYY-mm-dd HH:MM:SS");
       }
 
       if (response.code === 200) { // 根据你的接口返回码判断

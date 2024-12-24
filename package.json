@@ -1,17 +1,16 @@
 {
   "name": "sakura_admin",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "sakura_admin管理系统",
   "author": "ranyong",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prod": "vite",
     "docker": "vite",
-    "staging": "vite",
     "build:prod": "vite build",
-    "build:docker": "vite build",
-    "build:stage": "vite build --mode staging",
+    "build:docker": "vite build --mode docker",
     "preview": "vite preview"
   },
   "repository": {
