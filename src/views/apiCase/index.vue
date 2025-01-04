@@ -77,15 +77,64 @@
       <el-table-column label="创建时间" width="180" align="center" prop="createTime"
                        :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
       <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column
+          label="最后执行状态"
+          width="120"
+          align="center"
+          prop="xxx"
+          :show-overflow-tooltip="true"
+      />
+      <el-table-column
+          label="最后执行时间"
+          width="180"
+          align="center"
+          prop="xxx"
+          :show-overflow-tooltip="true"
+      />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-tooltip content="修改" placement="top">
+          <el-tooltip content="运行" placement="top">
+            <el-button link type="success" icon="Promotion" @click="handleRun(scope.row)"
+                       v-hasPermi="['testcase:testcaseInfo:batch']">运行
+            </el-button>
+          </el-tooltip>
+          <el-dialog
+              v-model="envDialogVisible"
+              title="选择环境"
+              width="30%"
+          >
+            <el-form>
+              <el-form-item label="环境">
+                <el-select v-model="selectedEnvId" placeholder="请选择环境">
+                  <el-option
+                      v-for="env in envList"
+                      :key="env.envId"
+                      :label="env.envName"
+                      :value="env.envId"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-form>
+            <template #footer>
+              <span class="dialog-footer">
+                <el-button @click="envDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="handleEnvConfirm(row)">
+                  确认
+                </el-button>
+              </span>
+            </template>
+          </el-dialog>
+
+
+          <el-tooltip content="编辑" placement="top">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                       v-hasPermi="['testcase:testcaseInfo:edit']"></el-button>
+                       v-hasPermi="['testcase:testcaseInfo:edit']">编辑
+            </el-button>
           </el-tooltip>
           <el-tooltip content="删除" placement="top">
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                       v-hasPermi="['testcase:testcaseInfo:remove']"></el-button>
+                       v-hasPermi="['testcase:testcaseInfo:remove']">删除
+            </el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -157,8 +206,10 @@
   </div>
 </template>
 
-<script setup name="Project">
-import {addProject, delProject, getProjectById, listProject, updateProject} from "@/api/project/project";
+<script setup name="ApiCase">
+import {ref, getCurrentInstance, reactive} from 'vue'
+
+import {addProject, getProjectById, updateProject} from "@/api/project/project";
 import {
   addApiCase,
   delApiCase,
@@ -167,6 +218,7 @@ import {
   updateApiCase,
   TestCase_Batch
 } from "@/api/apiCase/apiCase";
+import {listEnv} from "@/api/envinfo/envinfo";
 
 const {proxy} = getCurrentInstance();
 const testcaseList = ref([]);
@@ -178,42 +230,26 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+const envDialogVisible = ref(false)
+const envList = ref([])
+const selectedEnvId = ref('')
+
 
 const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    projectName: undefined,
-    responsibleName: undefined,
-    testUser: undefined,
-    devUser: undefined,
-    publishApp: undefined
+    testcaseName: undefined,
+    projectId: undefined,
+    testcaseId: undefined,
+    testcaseList: undefined,
+    remark: undefined
   },
   rules: {
-    projectName: [{required: true, message: "项目名称不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "项目名称不能超过10个字符",
-      trigger: "blur"
-    }],
-    responsibleName: [{required: true, message: "负责人不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "负责人名称不能超过10个字符",
-      trigger: "blur"
-    }],
-    testUser: [{required: true, message: "测试人员不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "测试人员名称不能超过10个字符",
-      trigger: "blur"
-    }],
-    devUser: [{required: true, message: "开发人员不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "开发人员名称不能超过10个字符",
-      trigger: "blur"
-    }],
-    publishApp: [{required: true, message: "发布应用不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "发布应用名称不能超过10个字符",
+    testcaseName: [{required: true, message: "用例名称不能为空", trigger: "blur"}, {
+      max: 50,
+      message: "用例名称不能超过50个字符",
       trigger: "blur"
     }]
   }
@@ -281,11 +317,44 @@ function handleAdd() {
   title.value = "添加项目";
 }
 
+/** 运行按钮操作 */
+async function handleRun(row) {
+  try {
+    reset();
+    // 获取环境列表
+    const envResponse = await listEnv({pageNum: 1, pageSize: 1000});
+    envList.value = envResponse.rows;
+    envDialogVisible.value = true;
+    console.log(envList.value)
+  } catch (error) {
+    row.msgError('获取环境列表失败：' + error.message);
+  }
+}
+
+/** 环境选择确认操作 */
+async function handleEnvConfirm(row) {
+  try {
+    if (!selectedEnvId.value) {
+      row.msgWarning('请选择环境');
+      return;
+    }
+    const testcaseId = row.testcaseId || ids.value;
+    const response = await TestCase_Batch(selectedEnvId.value, testcaseId);
+    form.value = response.data;
+    open.value = true;
+    title.value = "修改项目";
+    envDialogVisible.value = false;
+  } catch (error) {
+    console.error('Error:', error);
+    row.msgError('操作失败：' + error.message);
+  }
+}
+
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const projectId = row.projectId || ids.value;
-  getProjectById(projectId).then(response => {
+  const testcaseId = row.testcaseId || ids.value;
+  getApiCaseById(testcaseId).then(response => {
     form.value = response.data;
     open.value = true;
     title.value = "修改项目";
@@ -315,13 +384,13 @@ function submitForm() {
 
 /** 删除按钮操作 */
 function handleDelete(row) {
-  const projectId = row.projectId || ids.value;
-  const projectName = row.projectName || ids.value;
-  proxy.$modal.confirm('是否确认删除项目名称为"' + projectName + '"的数据项?').then(function () {
-    return delProject(projectId);
+  const testcaseId = row.testcaseId || ids.value;
+  const testcaseName = row.testcaseName || ids.value;
+  proxy.$modal.confirm('是否确认删除用例名称为"' + testcaseName + '"的数据项?').then(function () {
+    return delApiCase(testcaseId);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess(projectName + "删除成功");
+    proxy.$modal.msgSuccess(testcaseName + "删除成功");
   }).catch(() => {
   });
 }
@@ -330,7 +399,7 @@ function handleDelete(row) {
 function handleExport() {
   proxy.download("monitor/job/export", {
     ...queryParams.value,
-  }, `project_${new Date().getTime()}.xlsx`);
+  }, `apicase_${new Date().getTime()}.xlsx`);
 }
 
 getList();
