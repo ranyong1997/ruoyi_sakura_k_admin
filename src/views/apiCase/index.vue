@@ -152,7 +152,7 @@
 <script setup name="ApiCase">
 import {ref, getCurrentInstance, reactive} from 'vue'
 
-import {addProject, getProjectById, updateProject} from "@/api/project/project";
+import {addProject, updateProject} from "@/api/project/project";
 import {
   addApiCase,
   delApiCase,
@@ -207,7 +207,6 @@ function getList() {
     testcaseList.value = response.rows.map(row => {
       return Object.assign({}, ...row);
     });
-    console.log(testcaseList.value)
     total.value = response.total;
     loading.value = false;
   });
@@ -261,27 +260,31 @@ function handleAdd() {
 }
 
 /** 运行按钮操作 */
-async function handleRun(row) {
+async function handleRun() {
   try {
-    reset();
+    // 重置选择的环境
+    selectedEnvId.value = ''
     // 获取环境列表
     const envResponse = await listEnv({pageNum: 1, pageSize: 1000});
     envList.value = envResponse.rows;
-    console.log("---->", envList);
     envDialogVisible.value = true;
   } catch (error) {
-    // row.msgError('获取环境列表失败：' + error.message);
-    console.log('获取环境列表失败：' + error.message)
+    proxy.$modal.msgError('获取环境列表失败：' + error.message);
   }
 }
 
 /** 环境选择确认操作 */
 async function handleEnvConfirm() {
-  const testcaseId = testcaseList.value[0].testcaseId;
-  await TestCase_Batch(selectedEnvId.value, testcaseId);
-  // 关闭弹窗
-  envDialogVisible.value = false;
+  try {
+    const testcaseId = testcaseList.value[0].testcaseId;
+    await TestCase_Batch(selectedEnvId.value, testcaseId);
+    // 关闭弹窗
+    envDialogVisible.value = false;
+  } catch (error) {
+    proxy.$modal.msgError('请选择环境');
+  }
 }
+
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
@@ -290,7 +293,7 @@ function handleUpdate(row) {
   getApiCaseById(testcaseId).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改项目";
+    title.value = "修改用例";
   });
 }
 
