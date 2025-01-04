@@ -6,10 +6,10 @@
         :inline="true"
         v-show="showSearch"
     >
-      <el-form-item label="用例名称" prop="apiName">
+      <el-form-item label="接口名称" prop="apiName">
         <el-input
             v-model="queryParams.apiName"
-            placeholder="请输入用例名称"
+            placeholder="请输入接口名称"
             clearable
             style="width: 200px"
             @keyup.enter="handleQuery"
@@ -92,13 +92,13 @@
     >
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column
-          label="用例编号"
+          label="接口编号"
           width="center"
           align="center"
           prop="apiId"
       />
       <el-table-column
-          label="用例名称"
+          label="接口名称"
           width="center"
           align="center"
           prop="apiName"
