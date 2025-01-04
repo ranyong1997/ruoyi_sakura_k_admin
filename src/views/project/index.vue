@@ -2,13 +2,15 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
       <el-form-item label="项目名称" prop="projectName">
-        <el-input
-            v-model="queryParams.projectName"
-            placeholder="请输入项目名称"
-            clearable
-            style="width: 200px"
-            @keyup.enter="handleQuery"
-        />
+        <el-form @submit.prevent>
+          <el-input
+              v-model="queryParams.projectName"
+              placeholder="请输入项目名称"
+              clearable
+              style="width: 200px"
+              @keyup.enter="handleQuery"
+          />
+        </el-form>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>

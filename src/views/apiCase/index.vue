@@ -1,41 +1,19 @@
 <template>
   <div class="app-container">
-    <el-form
-        :model="queryParams"
-        ref="queryRef"
-        :inline="true"
-        v-show="showSearch"
-    >
-      <el-form-item label="用例名称" prop="apiName">
-        <el-input
-            v-model="queryParams.apiName"
-            placeholder="请输入用例名称"
-            clearable
-            style="width: 200px"
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="状态" prop="apiStatus">
-        <el-select
-            v-model="queryParams.apiStatus"
-            placeholder="状态"
-            clearable
-            style="width: 240px"
-            @keyup.enter="handleQuery"
-        >
-          <el-option
-              v-for="dict in sys_normal_disable"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.value"
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
+      <el-form-item label="用例名称" prop="testcaseName">
+        <el-form @submit.prevent>
+          <el-input
+              v-model="queryParams.testcaseName"
+              placeholder="请输入用例名称"
+              clearable
+              style="width: 200px"
+              @keyup.enter="handleQuery"
           />
-        </el-select>
+        </el-form>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery"
-        >搜索
-        </el-button
-        >
+        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
@@ -46,7 +24,7 @@
             plain
             icon="Plus"
             @click="handleAdd"
-            v-hasPermi="['apitest:apiInfo:add']"
+            v-hasPermi="['testcase:testcaseInfo:add']"
         >新增
         </el-button>
       </el-col>
@@ -57,7 +35,7 @@
             icon="Edit"
             :disabled="single"
             @click="handleUpdate"
-            v-hasPermi="['apitest:apiInfo:edit']"
+            v-hasPermi="['testcase:testcaseInfo:edit']"
         >修改
         </el-button>
       </el-col>
@@ -68,7 +46,7 @@
             icon="Delete"
             :disabled="multiple"
             @click="handleDelete"
-            v-hasPermi="['apitest:apiInfo:remove']"
+            v-hasPermi="['testcase:testcaseInfo:remove']"
         >删除
         </el-button>
       </el-col>
@@ -78,170 +56,41 @@
             plain
             icon="Download"
             @click="handleExport"
-            v-hasPermi="['apitest:apiInfo:export']"
+            v-hasPermi="['testcase:testcaseInfo:export']"
         >导出
         </el-button>
       </el-col>
-      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"/>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table
-        v-loading="loading"
-        :data="apiList"
-        @selection-change="handleSelectionChange"
-    >
+    <el-table v-loading="loading" :data="testcaseList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
-      <el-table-column
-          label="接口编号"
-          width="center"
-          align="center"
-          prop="apiId"
-      />
-      <el-table-column
-          label="接口名称"
-          width="center"
-          align="center"
-          prop="apiName"
-      />
-      <el-table-column
-          label="所属项目"
-          align="center"
-          prop="project.projectName"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="请求方法"
-          align="center"
-          prop="apiMethod"
-          :show-overflow-tooltip="true"
-      >
+      <el-table-column label="用例编号" width="center" align="center" prop="testcaseId"/>
+      <el-table-column label="用例名称" align="center" prop="testcaseName" :show-overflow-tooltip="true"/>
+      <el-table-column label="所属项目" align="center" prop="projectName" :show-overflow-tooltip="true"/>
+      <el-table-column label="用例列表" align="center" prop="testcaseList" :show-overflow-tooltip="true"/>
+      <el-table-column label="描述" align="center" prop="remark" :show-overflow-tooltip="true"/>
+      <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
+                       :formatter="(row) => parseTime(row.updateTime)"
+                       :show-overflow-tooltip="true"/>
+      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
+                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-tag :type="getTagMethod(scope.row.apiMethod)">
-            {{ scope.row.apiMethod }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column
-          label="请求地址"
-          align="center"
-          prop="apiUrl"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="优先级"
-          align="center"
-          prop="apiLevel"
-          :show-overflow-tooltip="true"
-      >
-        <template #default="scope">
-          <el-tag :type="getTagLevel(scope.row.apiLevel)">
-            {{ scope.row.apiLevel }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column
-          label="状态"
-          align="center"
-          prop="apiStatus"
-          :show-overflow-tooltip="true"
-      >
-        <template #default="scope">
-          <dict-tag
-              :options="sys_normal_disable"
-              :value="scope.row.apiStatus"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column
-          label="创建人"
-          width="center"
-          align="center"
-          prop="createBy"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="创建时间"
-          width="180"
-          align="center"
-          prop="createTime"
-          :formatter="(row) => parseTime(row.createTime)"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="更新时间"
-          width="180"
-          align="center"
-          prop="updateTime"
-          :formatter="(row) => parseTime(row.updateTime)"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="更新人"
-          width="center"
-          align="center"
-          prop="updateBy"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="最后执行状态"
-          width="120"
-          align="center"
-          prop="xxx"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="最后执行时间"
-          width="180"
-          align="center"
-          prop="xxx"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          width="140"
-          label="操作"
-          align="center"
-          class-name="small-padding fixed-width"
-      >
-        <template #default="scope">
-          <el-tooltip content="运行" placement="top">
-            <el-button
-                link
-                type="primary"
-                icon="Position"
-                @click="handleDebug(scope.row)"
-                v-hasPermi="['apitest:apiInfo:debug']"
-            ></el-button>
-          </el-tooltip>
           <el-tooltip content="修改" placement="top">
-            <el-button
-                link
-                type="primary"
-                icon="Edit"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['apitest:apiInfo:edit']"
-            ></el-button>
+            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
+                       v-hasPermi="['testcase:testcaseInfo:edit']"></el-button>
           </el-tooltip>
-          <!--          <el-tooltip content="复制" placement="top">-->
-          <!--            <el-button-->
-          <!--                link-->
-          <!--                type="primary"-->
-          <!--                icon="Connection"-->
-          <!--                @click="handleUpdate(scope.row)"-->
-          <!--                v-hasPermi="['apitest:apiInfo:edit']"-->
-          <!--            ></el-button>-->
-          <!--          </el-tooltip>-->
           <el-tooltip content="删除" placement="top">
-            <el-button
-                link
-                type="primary"
-                icon="Delete"
-                @click="handleDelete(scope.row)"
-                v-hasPermi="['apitest:apiInfo:remove']"
-            ></el-button>
+            <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
+                       v-hasPermi="['testcase:testcaseInfo:remove']"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
     </el-table>
+
     <pagination
         v-show="total > 0"
         :total="total"
@@ -249,31 +98,78 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
     />
-    <!-- 添加或修改接口对话框 -->
-    <el-drawer v-model="open" size="80%" :title="title" direction="rtl">
-      <EditApi
-          ref="editApiRef"
-          :formData="form"
-          @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"
-      >
-      </EditApi>
-    </el-drawer>
+
+    <!-- 添加或修改项目对话框 -->
+    <!--    <el-dialog :title="title" v-model="open" width="600px" append-to-body>-->
+    <!--      <el-form ref="testcaseRef" :model="form" :rules="rules" label-width="80px">-->
+    <!--        <el-row>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="用例名称" prop="projectName">-->
+    <!--              <el-input v-model="form.projectName" placeholder="请输入用例名称" maxlength="10" show-word-limit-->
+    <!--                        clearable/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="负责人" prop="responsibleName">-->
+    <!--              <el-input v-model="form.responsibleName" placeholder="请输入负责人姓名" maxlength="10" show-word-limit-->
+    <!--                        clearable/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="开发人员" prop="devUser">-->
+    <!--              <el-input v-model="form.devUser" placeholder="请输入开发人员姓名" maxlength="10" show-word-limit-->
+    <!--                        clearable/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="测试人员" prop="testUser">-->
+    <!--              <el-input v-model="form.testUser" placeholder="请输入测试人员姓名" maxlength="10" show-word-limit-->
+    <!--                        clearable/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="发布应用" prop="publishApp">-->
+    <!--              <el-input v-model="form.publishApp" placeholder="请输入发布应用名称" maxlength="10" show-word-limit-->
+    <!--                        clearable/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="简要描述" prop="simpleDesc">-->
+    <!--              <el-input v-model="form.simpleDesc" placeholder="请输入简要描述" maxlength="100" show-word-limit-->
+    <!--                        type="textarea"/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--          <el-col :span="24">-->
+    <!--            <el-form-item label="备注" prop="remark">-->
+    <!--              <el-input v-model="form.remark" placeholder="请输入备注" maxlength="100" show-word-limit-->
+    <!--                        type="textarea"/>-->
+    <!--            </el-form-item>-->
+    <!--          </el-col>-->
+    <!--        </el-row>-->
+    <!--      </el-form>-->
+    <!--      <template #footer>-->
+    <!--        <div class="dialog-footer">-->
+    <!--          <el-button type="primary" @click="submitForm">确 定</el-button>-->
+    <!--          <el-button @click="cancel">取 消</el-button>-->
+    <!--        </div>-->
+    <!--      </template>-->
+    <!--    </el-dialog>-->
   </div>
 </template>
 
-<script setup name="Api">
-import {ref, getCurrentInstance, reactive, computed, nextTick} from 'vue'
+<script setup name="Project">
+import {addProject, delProject, getProjectById, listProject, updateProject} from "@/api/project/project";
 import {
-  delApi,
-  getApiById,
-  listApi,
-  testApiById,
-} from "@/api/apiInfo/apiInfo";
-import EditApi from "./components/EditApi.vue";
+  addApiCase,
+  delApiCase,
+  getApiCaseById,
+  listApiCase,
+  updateApiCase,
+  TestCase_Batch
+} from "@/api/apiCase/apiCase";
+
 const {proxy} = getCurrentInstance();
-const editApiRef = ref(null);
-const {sys_normal_disable} = proxy.useDict("sys_normal_disable");
-const apiList = ref([]);
+const testcaseList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -282,146 +178,81 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
-const expression = ref("");
-
-const getTagMethod = computed(() => (method) => {
-  switch (method.toUpperCase()) {
-    case "GET":
-      return "primary";
-    case "POST":
-      return "success";
-    case "DELETE":
-      return "danger";
-    case "PUT":
-      return "warning";
-    case "PATCH":
-      return "info";
-    default:
-      return "";
-  }
-});
-
-const getTagLevel = computed(() => (level) => {
-  switch (level.toUpperCase()) {
-    case "P0":
-      return "primary";
-    case "P1":
-      return "success";
-    case "DELETE":
-      return "danger";
-    case "P2":
-      return "warning";
-    case "P3":
-      return "info";
-  }
-});
 
 const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    apiName: undefined,
-    projectId: undefined,
-    apiMethod: undefined,
-    apiUrl: undefined,
-    apiStatus: undefined,
-    apiLevel: undefined,
-    apiTags: undefined,
-    requestDataType: undefined,
-    requestData: undefined,
-    requestHeaders: undefined,
-    remark: undefined,
+    projectName: undefined,
+    responsibleName: undefined,
+    testUser: undefined,
+    devUser: undefined,
+    publishApp: undefined
   },
   rules: {
-    apiName: [
-      {required: true, message: "接口名称不能为空", trigger: "blur"},
-      {
-        max: 10,
-        message: "接口名称不能超过10个字符",
-        trigger: "blur",
-      },
-    ],
-    api_url: [
-      {required: true, message: "接口url不能为空", trigger: "blur"},
-      {
-        max: 512,
-        message: "接口url不能超过512个字符",
-        trigger: "blur",
-      },
-    ],
-    api_method: [
-      {required: true, message: "接口方法不能为空", trigger: "blur"},
-      {
-        max: 10,
-        message: "接口方法不能超过10个字符",
-        trigger: "blur",
-      },
-    ],
-    api_level: [
-      {required: true, message: "接口优先级不能为空", trigger: "blur"},
-      {
-        max: 2,
-        message: "接口优先级不能超过2个字符",
-        trigger: "blur",
-      },
-    ],
-    api_status: [
-      {required: true, message: "接口状态不能为空", trigger: "blur"},
-      {
-        max: 1,
-        message: "接口状态不能超过1个字符",
-        trigger: "blur",
-      },
-    ],
-    apiLevel: [
-      {required: true, message: "请选择机接口优先级", trigger: "blur"},
-    ],
-  },
+    projectName: [{required: true, message: "项目名称不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "项目名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    responsibleName: [{required: true, message: "负责人不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "负责人名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    testUser: [{required: true, message: "测试人员不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "测试人员名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    devUser: [{required: true, message: "开发人员不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "开发人员名称不能超过10个字符",
+      trigger: "blur"
+    }],
+    publishApp: [{required: true, message: "发布应用不能为空", trigger: "blur"}, {
+      max: 10,
+      message: "发布应用名称不能超过10个字符",
+      trigger: "blur"
+    }]
+  }
 });
 
-const {queryParams, form} = toRefs(data);
+const {queryParams, form, rules} = toRefs(data);
 
-/** 查询接口列表 */
+/** 查询测试用例列表 */
 function getList() {
   loading.value = true;
-  listApi(queryParams.value).then((response) => {
-    apiList.value = response.rows;
+  listApiCase(queryParams.value).then(response => {
+    testcaseList.value = response.rows.map(row => {
+      return Object.assign({}, ...row);
+    });
+    console.log(testcaseList.value)
     total.value = response.total;
     loading.value = false;
   });
 }
 
-const props = defineProps({
-  formData: {
-    type: Object,
-    default: () => ({})
-  }
-})
-
-const emit = defineEmits(['saveOrUpdateOrDebug'])
+/** 取消按钮 */
+function cancel() {
+  open.value = false;
+  reset();
+}
 
 /** 表单重置 */
 function reset() {
   form.value = {
-    apiId: undefined,
-    apiName: undefined,
     projectId: undefined,
-    apiMethod: undefined,
-    apiUrl: undefined,
-    apiStatus: undefined,
-    apiLevel: undefined,
-    apiTags: undefined,
-    requestDataType: undefined,
-    requestData: undefined,
-    requestHeaders: undefined,
-    remark: undefined,
-    createBy: undefined,
-    createTime: undefined,
-    updateBy: undefined,
-    updateTime: undefined
+    testcaseName: undefined,
+    responsibleName: undefined,
+    testUser: undefined,
+    devUser: undefined,
+    publishApp: undefined,
+    simpleDesc: undefined,
+    remark: undefined
   };
-  proxy.resetForm("ApiRef");
+  proxy.resetForm("testcaseRef");
 }
 
 /** 搜索按钮操作 */
@@ -438,7 +269,7 @@ function resetQuery() {
 
 // 多选框选中数据
 function handleSelectionChange(selection) {
-  ids.value = selection.map((item) => item.apiId);
+  ids.value = selection.map(item => item.projectId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
 }
@@ -446,107 +277,60 @@ function handleSelectionChange(selection) {
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
-  form.value = {
-    apiId: undefined,
-    apiName: undefined,
-    projectId: undefined,
-    apiMethod: undefined,
-    apiUrl: undefined,
-    apiStatus: undefined,
-    apiLevel: undefined,
-    apiTags: undefined,
-    requestDataType: undefined,
-    requestData: undefined,
-    requestHeaders: undefined,
-    remark: undefined,
-  };
   open.value = true;
-  title.value = "添加接口";
-  // 确保在下一个 tick 中重置编辑组件
-  nextTick(() => {
-    if (editApiRef.value) {
-      editApiRef.value.setData(form.value);
-    }
-  });
-}
-
-/** 运行按钮操作 */
-function handleDebug(row) {
-  reset();
-  const apiId = row.apiId || ids.value;
-  getApiById(apiId).then((response) => {
-    form.value = response.data;
-    open.value = true;
-    title.value = "待开发";
-  });
+  title.value = "添加项目";
 }
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const apiId = row.apiId || ids.value;
-  getApiById(apiId).then((response) => {
+  const projectId = row.projectId || ids.value;
+  getProjectById(projectId).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改接口";
-    // 确保在下一个 tick 中设置数据
-    nextTick(() => {
-      if (editApiRef.value) {
-        editApiRef.value.setData(form.value);
-      }
-    });
+    title.value = "修改项目";
   });
 }
 
-// 处理子组件的保存/调试事件
-const handleSaveOrUpdateOrDebug = async (type, formData) => {
-  if (type === 'save') {
-    try {
-      getList();
-    } catch (error) {
-      console.error('Save/Update Error:', error);
-      proxy.$modal.msgError("操作失败：" + (error.message || '未知错误'));
-    }
-  } else if (type === 'debug') {
-    try {
-      const currentFormData = formData || form.value;
-      if (currentFormData.apiId) {
-        await testApiById(currentFormData.apiId);
-        proxy.$modal.msgSuccess("执行成功");
+/** 提交按钮 */
+function submitForm() {
+  proxy.$refs["testcaseRef"].validate(valid => {
+    if (valid) {
+      if (form.value.projectId != undefined) {
+        updateProject(form.value).then(response => {
+          proxy.$modal.msgSuccess("修改成功");
+          open.value = false;
+          getList();
+        });
+      } else {
+        addProject(form.value).then(response => {
+          proxy.$modal.msgSuccess("新增成功");
+          open.value = false;
+          getList();
+        });
       }
-    } catch (error) {
-      console.error('Debug Error:', error);
-      proxy.$modal.msgError("测试失败：" + (error.message || '未知错误'));
     }
-  }
-};
+  });
+}
 
 /** 删除按钮操作 */
 function handleDelete(row) {
-  const apiId = row.apiId || ids.value;
-  const apiName = row.apiName || ids.value;
-  proxy.$modal
-      .confirm('是否确认删除接口名称为"' + apiName + '"的数据项?')
-      .then(function () {
-        return delApi(apiId);
-      })
-      .then(() => {
-        getList();
-        proxy.$modal.msgSuccess(apiName + "删除成功");
-      })
-      .catch(() => {
-      });
+  const projectId = row.projectId || ids.value;
+  const projectName = row.projectName || ids.value;
+  proxy.$modal.confirm('是否确认删除项目名称为"' + projectName + '"的数据项?').then(function () {
+    return delProject(projectId);
+  }).then(() => {
+    getList();
+    proxy.$modal.msgSuccess(projectName + "删除成功");
+  }).catch(() => {
+  });
 }
 
 /** 导出按钮操作 */
 function handleExport() {
-  proxy.download(
-      "",
-      {
-        ...queryParams.value,
-      },
-      `api_${new Date().getTime()}.xlsx`
-  );
+  proxy.download("monitor/job/export", {
+    ...queryParams.value,
+  }, `project_${new Date().getTime()}.xlsx`);
 }
 
 getList();
