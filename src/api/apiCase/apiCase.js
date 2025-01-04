@@ -46,14 +46,14 @@ export function getApiCaseById(testcaseId) {
     })
 }
 
-// 根据环境ID和用例ID获取测试用例
+// 根据环境ID和用例ID运行测试用例
 export function TestCase_Batch(envId, testcaseId) {
     return request({
         url: baseurl + '/testcase_batch',
         method: 'post',
-        data: {
-            envId: envId,
-            testcaseId: testcaseId
+        params: {
+            env_id: envId,
+            testcase_id: testcaseId
         }
     })
 }
