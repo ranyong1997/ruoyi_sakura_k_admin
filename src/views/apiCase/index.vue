@@ -91,6 +91,7 @@
           prop="xxx"
           :show-overflow-tooltip="true"
       />
+      <!--操作栏-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-tooltip content="运行" placement="top">
@@ -118,14 +119,12 @@
             <template #footer>
               <span class="dialog-footer">
                 <el-button @click="envDialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="handleEnvConfirm(row)">
+                <el-button type="primary" @click="handleEnvConfirm()">
                   确认
                 </el-button>
               </span>
             </template>
           </el-dialog>
-
-
           <el-tooltip content="编辑" placement="top">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                        v-hasPermi="['testcase:testcaseInfo:edit']">编辑
@@ -139,7 +138,7 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <!--分页-->
     <pagination
         v-show="total > 0"
         :total="total"
@@ -147,62 +146,6 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
     />
-
-    <!-- 添加或修改项目对话框 -->
-    <!--    <el-dialog :title="title" v-model="open" width="600px" append-to-body>-->
-    <!--      <el-form ref="testcaseRef" :model="form" :rules="rules" label-width="80px">-->
-    <!--        <el-row>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="用例名称" prop="projectName">-->
-    <!--              <el-input v-model="form.projectName" placeholder="请输入用例名称" maxlength="10" show-word-limit-->
-    <!--                        clearable/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="负责人" prop="responsibleName">-->
-    <!--              <el-input v-model="form.responsibleName" placeholder="请输入负责人姓名" maxlength="10" show-word-limit-->
-    <!--                        clearable/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="开发人员" prop="devUser">-->
-    <!--              <el-input v-model="form.devUser" placeholder="请输入开发人员姓名" maxlength="10" show-word-limit-->
-    <!--                        clearable/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="测试人员" prop="testUser">-->
-    <!--              <el-input v-model="form.testUser" placeholder="请输入测试人员姓名" maxlength="10" show-word-limit-->
-    <!--                        clearable/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="发布应用" prop="publishApp">-->
-    <!--              <el-input v-model="form.publishApp" placeholder="请输入发布应用名称" maxlength="10" show-word-limit-->
-    <!--                        clearable/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="简要描述" prop="simpleDesc">-->
-    <!--              <el-input v-model="form.simpleDesc" placeholder="请输入简要描述" maxlength="100" show-word-limit-->
-    <!--                        type="textarea"/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--          <el-col :span="24">-->
-    <!--            <el-form-item label="备注" prop="remark">-->
-    <!--              <el-input v-model="form.remark" placeholder="请输入备注" maxlength="100" show-word-limit-->
-    <!--                        type="textarea"/>-->
-    <!--            </el-form-item>-->
-    <!--          </el-col>-->
-    <!--        </el-row>-->
-    <!--      </el-form>-->
-    <!--      <template #footer>-->
-    <!--        <div class="dialog-footer">-->
-    <!--          <el-button type="primary" @click="submitForm">确 定</el-button>-->
-    <!--          <el-button @click="cancel">取 消</el-button>-->
-    <!--        </div>-->
-    <!--      </template>-->
-    <!--    </el-dialog>-->
   </div>
 </template>
 
@@ -286,7 +229,7 @@ function reset() {
     devUser: undefined,
     publishApp: undefined,
     simpleDesc: undefined,
-    remark: undefined
+    remark: undefined,
   };
   proxy.resetForm("testcaseRef");
 }
@@ -324,30 +267,20 @@ async function handleRun(row) {
     // 获取环境列表
     const envResponse = await listEnv({pageNum: 1, pageSize: 1000});
     envList.value = envResponse.rows;
+    console.log("---->", envList);
     envDialogVisible.value = true;
-    console.log(envList.value)
   } catch (error) {
-    row.msgError('获取环境列表失败：' + error.message);
+    // row.msgError('获取环境列表失败：' + error.message);
+    console.log('获取环境列表失败：' + error.message)
   }
 }
 
 /** 环境选择确认操作 */
-async function handleEnvConfirm(row) {
-  try {
-    if (!selectedEnvId.value) {
-      row.msgWarning('请选择环境');
-      return;
-    }
-    const testcaseId = row.testcaseId || ids.value;
-    const response = await TestCase_Batch(selectedEnvId.value, testcaseId);
-    form.value = response.data;
-    open.value = true;
-    title.value = "修改项目";
-    envDialogVisible.value = false;
-  } catch (error) {
-    console.error('Error:', error);
-    row.msgError('操作失败：' + error.message);
-  }
+async function handleEnvConfirm() {
+  const testcaseId = testcaseList.value[0].testcaseId;
+  await TestCase_Batch(selectedEnvId.value, testcaseId);
+  // 关闭弹窗
+  envDialogVisible.value = false;
 }
 
 /** 修改按钮操作 */
