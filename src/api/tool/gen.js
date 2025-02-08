@@ -18,9 +18,9 @@ export function listDbTable(query) {
 }
 
 // 查询表详细信息
-export function getGenTable(tableId) {
+export function getGenTableById(tableId) {
   return request({
-    url: '/tool/gen/' + tableId,
+    url: '/tool/gen/getById/' + tableId,
     method: 'get'
   })
 }
@@ -38,6 +38,15 @@ export function updateGenTable(data) {
 export function importTable(data) {
   return request({
     url: '/tool/gen/importTable',
+    method: 'post',
+    params: data
+  })
+}
+
+// 创建表
+export function createTable(data) {
+  return request({
+    url: '/tool/gen/createTable',
     method: 'post',
     params: data
   })
