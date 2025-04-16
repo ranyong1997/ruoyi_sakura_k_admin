@@ -25,14 +25,15 @@
     "@vueuse/core": "10.11.0",
     "ant-design-vue": "^4.1.1",
     "axios": "0.28.1",
-    "clipboard": "2.0.11",
+    "clipboard": "^2.0.11",
     "echarts": "5.5.1",
     "element-plus": "2.7.6",
     "file-saver": "2.0.5",
     "fuse.js": "6.6.2",
-    "js-beautify": "^1.15.1",
+    "js-beautify": "^1.15.3",
     "js-cookie": "3.0.5",
     "jsencrypt": "3.3.2",
+    "marked": "^15.0.8",
     "monaco-editor": "^0.52.0",
     "monaco-editor-esm-webpack-plugin": "^2.1.0",
     "monaco-editor-locales-plugin": "^0.0.3",
@@ -47,7 +48,7 @@
     "vue-cropper": "1.1.1",
     "vue-router": "4.4.0",
     "vue-virtual-scroller": "2.0.0-beta.8",
-    "vuedraggable": "4.1.0"
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "5.0.5",
