@@ -38,10 +38,10 @@ export default {
   dynamicTitle: false,
 
   /**
-   * @type {string | array} 'production' | ['production', 'development']
+   * @type {string | array} 'docker' | ['docker', 'development']
    * @description Need show err logs component.
-   * The default is only used in the production env
-   * If you want to also use it in dev, you can pass ['production', 'development']
+   * The default is only used in the docker env
+   * If you want to also use it in dev, you can pass ['docker', 'development']
    */
-  errorLog: 'production'
+  errorLog: 'docker'
 }

@@ -1,8 +1,8 @@
 # 运行前端
 ## 测试环境
 npm run dev
-## 生产环境构建
-npm run build:stage 
+## Docker环境构建
+
 
 
 ## 其他操作
