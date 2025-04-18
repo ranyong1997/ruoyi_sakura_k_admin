@@ -70,6 +70,13 @@
       </span>
     </div>
 
+    <div class="drawer-item">
+      <span>全局水印</span>
+      <span class="comp-style">
+        <el-switch v-model="settingsStore.Watermark" class="drawer-switch" @change="addWatermark(settingsStore.Watermark)"/>
+      </span>
+    </div>
+
     <el-divider />
 
     <el-button type="primary" plain icon="DocumentAdd" @click="saveSetting">保存配置</el-button>
@@ -79,15 +86,11 @@
 </template>
 
 <script setup>
-import variables from '@/assets/styles/variables.module.scss'
-import axios from 'axios'
-import { ElLoading, ElMessage } from 'element-plus'
-import { useDynamicTitle } from '@/utils/dynamicTitle'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
 import { handleThemeStyle } from '@/utils/theme'
-
+import {addWatermark} from '@/utils/wager_mark'
 const { proxy } = getCurrentInstance();
 const appStore = useAppStore()
 const settingsStore = useSettingsStore()
@@ -97,7 +100,8 @@ const theme = ref(settingsStore.theme);
 const sideTheme = ref(settingsStore.sideTheme);
 const storeSettings = computed(() => settingsStore);
 const predefineColors = ref(["#409EFF", "#ff4500", "#ff8c00", "#ffd700", "#90ee90", "#00ced1", "#1e90ff", "#c71585"]);
-
+const watermark = localStorage['layout-setting'] ? JSON.parse(localStorage['layout-setting'])?.watermark : true;
+settingsStore.Watermark = watermark;
 /** 是否需要topnav */
 function topNavChange(val) {
   if (!val) {
@@ -122,6 +126,7 @@ function saveSetting() {
     "fixedHeader": storeSettings.value.fixedHeader,
     "sidebarLogo": storeSettings.value.sidebarLogo,
     "dynamicTitle": storeSettings.value.dynamicTitle,
+    "watermark": storeSettings.value.Watermark,
     "sideTheme": storeSettings.value.sideTheme,
     "theme": storeSettings.value.theme
   };

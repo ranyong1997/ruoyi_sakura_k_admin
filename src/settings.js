@@ -38,6 +38,11 @@ export default {
   dynamicTitle: false,
 
   /**
+   * 是否显示全屏水印
+   */
+  Watermark: true,
+
+  /**
    * @type {string | array} 'docker' | ['docker', 'development']
    * @description Need show err logs component.
    * The default is only used in the docker env
