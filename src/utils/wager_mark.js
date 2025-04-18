@@ -1,12 +1,25 @@
 import useUserStore from '@/store/modules/user'
-import {watch} from 'vue'
+import {watch, ref} from 'vue'
 
-export function addWatermark() {
+// 创建一个变量来存储水印的可见状态
+const watermarkVisible = ref(false)
+
+export function addWatermark(enable = false) {
+    // 设置水印可见状态
+    watermarkVisible.value = enable
     const userStore = useUserStore()
-    watch(() => userStore.name, (newName) => {
-        console.log('userStore.name updated:', newName)
-        const target_mark = userStore.name ? userStore.name : "Sakura_k"
+    watch(() => [userStore.name, watermarkVisible.value], ([newName, visible]) => {
+        console.log('userStore.name updated:', newName, 'watermark visible:', visible)
         const existing = document.getElementById('my-watermark')
+        // 如果水印不可见，则移除现有水印并返回
+        if (!visible) {
+            if (existing) {
+                existing.remove()
+            }
+            return
+        }
+        // 如果水印可见，继续创建或更新水印
+        const target_mark = userStore.name ? userStore.name : "Sakura_k"
         if (existing) {
             existing.remove()
         }
@@ -14,6 +27,7 @@ export function addWatermark() {
         watermark.id = 'my-watermark'
         watermark.className = 'global-watermark'
         document.body.appendChild(watermark)
+
         const canvas = document.createElement('canvas')
         canvas.width = 200
         canvas.height = 150
