@@ -158,6 +158,7 @@ const createForm = () => {
     apiUrl: '',
     projectId: null,
     apiTags: [],
+    requestDataType: 0,
     apiLevel: 'P0',
     remark: ""
   }
@@ -215,6 +216,7 @@ const setData = (formData) => {
       apiUrl: formData.apiUrl || '',
       projectId: formData.projectId || null,
       apiTags: formData.apiTags || [],
+      requestDataType: formData.requestDataType || '0',
       apiLevel: formData.apiLevel || 'P0',
       remark: formData.remark || ""
     };
