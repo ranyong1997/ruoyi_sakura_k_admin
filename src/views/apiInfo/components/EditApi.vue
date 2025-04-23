@@ -148,7 +148,6 @@ const getData = () => {
       headersObject[header.name] = header.value
     }
   })
-
   return {
     ...apiInfoData,
     params: paramsData.value,

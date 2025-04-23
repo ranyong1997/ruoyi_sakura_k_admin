@@ -141,7 +141,7 @@
 import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
-import {addApi, updateApi, listApi} from "@/api/apiInfo/apiInfo";
+import {addApi, updateApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
 import {formatDate} from '@/components/monaco/formatTime';
 
@@ -157,9 +157,11 @@ const createForm = () => {
     apiName: '',
     apiUrl: '',
     projectId: null,
-    apiTags: [],
-    requestDataType: 0,
     apiLevel: 'P0',
+    apiTags: [],
+    requestData: {},
+    requestDataType: 0,
+    requestHeaders: {},
     remark: ""
   }
 }
@@ -216,7 +218,9 @@ const setData = (formData) => {
       apiUrl: formData.apiUrl || '',
       projectId: formData.projectId || null,
       apiTags: formData.apiTags || [],
-      requestDataType: formData.requestDataType || '0',
+      requestData: formData.requestData || {},
+      requestDataType: formData.requestDataType || '0', // 0[none] 1[json] 2[form] 3[x_form] 4[raw]
+      requestHeaders: formData.requestHeaders || {},
       apiLevel: formData.apiLevel || 'P0',
       remark: formData.remark || ""
     };
@@ -282,7 +286,7 @@ const addTag = () => {
 const removeTag = (tag) => {
   state.form.apiTags.splice(state.form.apiTags.indexOf(tag), 1)
 }
-
+// 调试
 const handleDebug = () => {
   state.showEnvPage = true
 }
@@ -298,7 +302,7 @@ const tableData = ref({
 const saveOrUpdateOrDebug = async (handleType = 'save') => {
   // 表单验证
   if (!state.form.apiUrl) {
-    ElMessage.warning('请填写请求地址信息!');
+    ElMessage.warning('请填写请求地址信息');
     return
   }
   if (!state.form.apiMethod) {
@@ -316,12 +320,11 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       let response = null, msg = undefined;
       if (state.form.apiId != null) {
         response = await updateApi(state.form);
-        msg = '保存成功'
+        msg = '保存成功🎉'
       } else {
         response = await addApi(state.form);
-        msg = '新增成功'
+        msg = '新增成功🎉'
       }
-
       if (response.code === 200) { // 根据你的接口返回码判断
         ElMessage.success(msg);
         emit('saveOrUpdateOrDebug', 'save');

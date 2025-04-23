@@ -375,7 +375,7 @@ const data = reactive({
       },
     ],
     apiLevel: [
-      {required: true, message: "请选择机接口优先级", trigger: "blur"},
+      {required: true, message: "请选择接口优先级", trigger: "blur"},
     ],
   },
 });
@@ -439,7 +439,7 @@ function resetQuery() {
 // 多选框选中数据
 function handleSelectionChange(selection) {
   ids.value = selection.map((item) => item.apiId);
-  single.value = selection.length != 1;
+  single.value = selection.length !== 1;
   multiple.value = !selection.length;
 }
 
@@ -487,6 +487,7 @@ function handleUpdate(row) {
   const apiId = row.apiId || ids.value;
   getApiById(apiId).then((response) => {
     form.value = response.data;
+    console.log("0----->",form.value)
     open.value = true;
     title.value = "修改接口";
     // 确保在下一个 tick 中设置数据
