@@ -46,7 +46,7 @@ export function getApiById(apiId) {
     })
 }
 
-// 根据 ID 测试连接机器人
+// 根据 ID 调试接口
 export function testApiById(apiId) {
     return request({
         url: baseurl + '/' + apiId,

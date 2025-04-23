@@ -211,6 +211,7 @@
                 @click="handleDebug(scope.row)"
                 v-hasPermi="['apitest:apiInfo:debug']"
             ></el-button>
+
           </el-tooltip>
           <el-tooltip content="修改" placement="top">
             <el-button
