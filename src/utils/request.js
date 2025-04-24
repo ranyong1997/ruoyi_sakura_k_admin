@@ -37,11 +37,13 @@ service.interceptors.request.use(config => {
     config.url = url;
   }
   if (!isRepeatSubmit && (config.method === 'post' || config.method === 'put')) {
+
     const requestObj = {
       url: config.url,
       data: typeof config.data === 'object' ? JSON.stringify(config.data) : config.data,
       time: new Date().getTime()
     }
+    console.log("requestObj",requestObj)
     const requestSize = Object.keys(JSON.stringify(requestObj)).length; // 请求数据大小
     const limitSize = 5 * 1024 * 1024; // 限制存放数据5M
     if (requestSize >= limitSize) {

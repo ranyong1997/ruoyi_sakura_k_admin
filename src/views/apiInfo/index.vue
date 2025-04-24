@@ -479,6 +479,11 @@ function handleDebug(row) {
     form.value = response.data;
     open.value = true;
     title.value = "待开发";
+    nextTick(() => {
+      if (editApiRef.value) {
+        editApiRef.value.setData(form.value);
+      }
+    });
   });
 }
 
