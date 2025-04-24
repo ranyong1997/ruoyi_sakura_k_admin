@@ -127,11 +127,33 @@
     <el-dialog
         v-model="state.showEnvPage"
         destroy-on-close
-        title="调试"
+        title="运行用例"
         width="30%"
     >
+      <el-form :model="debugForm" label-width="80px">
+        <el-form-item label="运行模式">
+          <el-select v-model="debugForm.runMode" placeholder="请选择运行模式" class="w-full">
+            <el-option label="同步运行(同步执行,等待执行结果)" value="sync"></el-option>
+            <el-option label="异步运行(异步执行用例,后台运行,执行结束后报告列表查看)" value="async"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="运行环境">
+          <el-select v-model="debugForm.runEnv" placeholder="请选择运行环境" class="w-full">
+            <el-option
+                v-for="env in envList"
+                :key="env.envId"
+                :label="env.envName"
+                :value="env.envId">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+
       <template #footer>
-        <el-button size="default" type="success" @click="saveOrUpdateOrDebug('debug')">调试</el-button>
+        <div class="flex justify-end gap-2">
+          <el-button @click="state.showEnvPage = false">取消</el-button>
+          <el-button size="default" type="primary" @click="saveOrUpdateOrDebug('debug')">运行</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -141,13 +163,21 @@
 import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
-import {addApi, updateApi} from "@/api/apiInfo/apiInfo";
+import {addApi, testApiById, updateApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
+import {listEnv} from "@/api/envinfo/envinfo"
 import {formatDate} from '@/components/monaco/formatTime';
+
+const debugForm = reactive({
+  runMode: '同步运行(同步执行,等待执行结果)',
+  runEnv: ''
+})
+
 
 // emit
 const emit = defineEmits(["saveOrUpdateOrDebug"])
 // 自定义变量
+const envList = ref([])
 const formRef = ref()
 const methodRef = ref()
 const caseTagInputRef = ref()
@@ -165,6 +195,24 @@ const createForm = () => {
     remark: ""
   }
 }
+// 获取环境列表
+const fetchEnvList = async () => {
+  try {
+    const res = await listEnv()
+    if (res && res.rows) {
+      envList.value = res.rows
+      console.log('envList', envList.value)
+      // 如果有数据，默认选中第一个环境
+      if (envList.value.length > 0) {
+        debugForm.runEnv = envList.value[0].id
+      }
+    }
+  } catch (error) {
+    ElMessage.error('获取环境列表失败:', error)
+  }
+}
+
+
 const state = reactive({
   // cat apiInfo info
   showCaseInfo: false,
@@ -196,15 +244,42 @@ const props = defineProps({
   formData: {
     type: Object,
     default: () => ({})
+  },
+  paramsData: {
+    type: Object,
+    default: () => ({})
+  },
+  bodyData: {
+    type: Object,
+    default: () => ({})
+  },
+  headersData: {
+    type: Object,
+    default: () => ({})
+  },
+  cookiesData: {
+    type: Object,
+    default: () => ({})
   }
 });
 
 // 监听 formData 的变化
-watch(() => props.formData, (newVal) => {
+watch(() => [props.formData, props.paramsData,props.bodyData,props.headersData,props.cookiesData], ([newVal,paramsData,bodyData,headersData,cookiesData]) => {
+  console.log('formData', newVal, 'paramsData', paramsData,'bodyData',bodyData,'headersData',headersData,'cookiesData',cookiesData);
+
+
+  
   if (newVal) {
-    setData(newVal);
+    nextTick(() => {
+      setData(newVal);
+      
+      // state.form = createForm()
+      // state.form = {
+        
+      // }
+    })
   }
-}, {deep: true});
+}, {deep: true,immediate:true});
 
 // 初始化表单
 const setData = (formData) => {
@@ -332,19 +407,34 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
         ElMessage.error(response.message || '保存失败');
       }
     } else if (handleType === 'debug') {
+      // 验证表单
+      if (!debugForm.runEnv) {
+        ElMessage.warn('请选择运行环境')
+        return
+      }
+      // 执行调试逻辑
+      console.log('开始调试，模式:', debugForm.runMode, '环境:', debugForm.runEnv)
       emit('saveOrUpdateOrDebug', 'debug');
+      // 调用API进行调试
+      await testApiById(state.form.apiId,  debugForm.runEnv)
       state.showEnvPage = false;
+
     }
   } catch (error) {
-    console.error('保存失败:', error);
     ElMessage.error('保存失败，请重试');
   }
 }
 
 onMounted(() => {
   fetchProjectData()
+  fetchEnvList()
 })
 
+// 打开弹窗时也可以刷新环境列表
+const openEnvDialog = () => {
+  fetchEnvList()
+  state.showEnvPage = true
+}
 
 defineExpose({
   setData,

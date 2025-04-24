@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-card>
       <div class="h100">
-        <ApiInfo ref="ApiInfoRef" :formData="formData" @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
+        <ApiInfo ref="ApiInfoRef" :formData="formData" :paramsData="paramsData" :bodyData="bodyData" :headersData="headersData" :cookiesData="cookiesData" @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
         <div>
           <el-card>
             <template #header>
