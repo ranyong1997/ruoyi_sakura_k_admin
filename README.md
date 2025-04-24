@@ -3,7 +3,9 @@
 npm run dev
 ## Docker环境构建
 
-
+同时提交gitee和github仓库
+# 将现有的origin远程仓库设置为多URL
+git remote set-url --add origin git@gitee.com:ran_yong/ruoyi_sakura_k_admin.git
 
 ## 其他操作
 
