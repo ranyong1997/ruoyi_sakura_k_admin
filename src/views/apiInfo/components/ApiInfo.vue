@@ -264,22 +264,33 @@ const props = defineProps({
 });
 
 // 监听 formData 的变化
-watch(() => [props.formData, props.paramsData,props.bodyData,props.headersData,props.cookiesData], ([newVal,paramsData,bodyData,headersData,cookiesData]) => {
-  console.log('formData', newVal, 'paramsData', paramsData,'bodyData',bodyData,'headersData',headersData,'cookiesData',cookiesData);
+watch(() => [
+  props.formData,
+  props.paramsData,
+  props.bodyData,
+  props.headersData,
+  props.cookiesData
+], ([
+      newVal,
+      paramsData,
+      bodyData,
+      headersData,
+      cookiesData
+    ]) => {
+  console.log('formData', newVal, 'paramsData', paramsData, 'bodyData', bodyData, 'headersData', headersData, 'cookiesData',cookiesData);
 
 
-  
   if (newVal) {
     nextTick(() => {
       setData(newVal);
-      
+
       // state.form = createForm()
       // state.form = {
-        
+
       // }
     })
   }
-}, {deep: true,immediate:true});
+}, {deep: true, immediate: true});
 
 // 初始化表单
 const setData = (formData) => {
@@ -416,7 +427,7 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       console.log('开始调试，模式:', debugForm.runMode, '环境:', debugForm.runEnv)
       emit('saveOrUpdateOrDebug', 'debug');
       // 调用API进行调试
-      await testApiById(state.form.apiId,  debugForm.runEnv)
+      await testApiById(state.form.apiId, debugForm.runEnv)
       state.showEnvPage = false;
 
     }

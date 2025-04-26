@@ -17,14 +17,14 @@
           </el-select>
         </template>
       </el-table-column>
-      <el-table-column prop="example" label="示例值" min-width="180">
+      <el-table-column prop="value" label="示例值" min-width="180">
         <template #default="{ row, $index }">
-          <el-input v-model="row.example" placeholder="请输入示例值" />
+          <el-input v-model="row.value" placeholder="请输入示例值" />
         </template>
       </el-table-column>
       <el-table-column prop="description" label="说明" min-width="180">
         <template #default="{ row, $index }">
-          <el-input v-model="row.description" placeholder="请输入参数说明" />
+          <el-input v-model="row.description" placeholder="请输入说明" />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="120" fixed="right">
@@ -57,7 +57,7 @@ const addParam = () => {
   newParams.push({
     name: '',
     type: 'string',
-    example: '',
+    value: '',
     description: ''
   })
   emit('update:params', newParams)
