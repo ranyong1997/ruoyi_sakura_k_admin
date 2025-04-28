@@ -86,7 +86,10 @@ const cookiesData = ref([])
 const bodyData = ref(null)
 
 const handleSaveOrUpdateOrDebug = (type) => {
-  emit('saveOrUpdateOrDebug', type)
+  // 获取完整表单数据
+  const completeFormData = getData();
+  // 传递类型和完整数据给父组件
+  emit('saveOrUpdateOrDebug', type, completeFormData);
 }
 
 const updateContentType = (contentType) => {

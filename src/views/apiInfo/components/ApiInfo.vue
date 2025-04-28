@@ -374,13 +374,16 @@ const tableData = ref({
 })
 
 // 保存，或调试用例
-const saveOrUpdateOrDebug = async (handleType = 'save') => {
+const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => {
+  // 使用外部传入的数据或本地表单数据
+  const formData = externalData || state.form;
+  
   // 表单验证
-  if (!state.form.apiUrl) {
+  if (!formData.apiUrl) {
     ElMessage.warning('请填写请求地址信息');
     return
   }
-  if (!state.form.apiMethod) {
+  if (!formData.apiMethod) {
     ElMessage.warning('请选择请求方式！');
     return
   }
@@ -393,11 +396,11 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
   try {
     if (handleType === 'save') {
       let response = null, msg = undefined;
-      if (state.form.apiId != null) {
-        response = await updateApi(state.form);
+      if (formData.apiId != null) {
+        response = await updateApi(formData);
         msg = '保存成功🎉'
       } else {
-        response = await addApi(state.form);
+        response = await addApi(formData);
         msg = '新增成功🎉'
       }
       if (response.code === 200) { // 根据你的接口返回码判断
@@ -416,9 +419,8 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       console.log('开始调试，模式:', debugForm.runMode, '环境:', debugForm.runEnv)
       emit('saveOrUpdateOrDebug', 'debug');
       // 调用API进行调试
-      await testApiById(state.form.apiId,  debugForm.runEnv)
+      await testApiById(formData.apiId, debugForm.runEnv)
       state.showEnvPage = false;
-
     }
   } catch (error) {
     ElMessage.error('保存失败，请重试');

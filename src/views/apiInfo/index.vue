@@ -509,18 +509,18 @@ function handleUpdate(row) {
 const handleSaveOrUpdateOrDebug = async (type, formData) => {
   if (type === 'save') {
     try {
+      // 收到保存成功的消息，刷新列表
       getList();
+      // 关闭抽屉
+      open.value = false;
     } catch (error) {
       console.error('Save/Update Error:', error);
       proxy.$modal.msgError("操作失败：" + (error.message || '未知错误'));
     }
   } else if (type === 'debug') {
     try {
-      const currentFormData = formData || form.value;
-      if (currentFormData.apiId) {
-        await testApiById(currentFormData.apiId);
-        proxy.$modal.msgSuccess("执行成功");
-      }
+      // 已在子组件中处理调试逻辑
+      console.log('调试成功，收到子组件返回的调试结果');
     } catch (error) {
       console.error('Debug Error:', error);
       proxy.$modal.msgError("测试失败：" + (error.message || '未知错误'));
