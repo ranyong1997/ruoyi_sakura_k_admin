@@ -186,14 +186,21 @@
           label="最后执行状态"
           width="120"
           align="center"
-          prop="xxx"
+          prop="lastExecutionStatus"
           :show-overflow-tooltip="true"
-      />
+      >
+        <template #default="scope">
+          <el-tag v-if="scope.row.lastExecutionStatus" :type="getStatusTagType(scope.row.lastExecutionStatus)">
+            {{ scope.row.lastExecutionStatus }}
+          </el-tag>
+          <span v-else>--</span>
+        </template>
+      </el-table-column>
       <el-table-column
           label="最后执行时间"
           width="180"
           align="center"
-          prop="xxx"
+          prop="lastExecutionTime"
           :show-overflow-tooltip="true"
       />
       <el-table-column
@@ -317,6 +324,24 @@ const getTagLevel = computed(() => (level) => {
   }
 });
 
+const getStatusTagType = computed(() => (status) => {
+  if (!status) return "";
+  switch (status.toUpperCase()) {
+    case "SUCCESS":
+      return "success";
+    case "FAILED":
+      return "danger";
+    case "ERROR":
+      return "danger";
+    case "PENDING":
+      return "info";
+    case "RUNNING":
+      return "warning";
+    default:
+      return "info";
+  }
+});
+
 const data = reactive({
   form: {},
   queryParams: {
@@ -404,6 +429,7 @@ const emit = defineEmits(['saveOrUpdateOrDebug'])
 
 /** 表单重置 */
 function reset() {
+  // 只重置基本字段，保留复杂对象的结构
   form.value = {
     apiId: undefined,
     apiName: undefined,
@@ -412,10 +438,15 @@ function reset() {
     apiUrl: undefined,
     apiStatus: undefined,
     apiLevel: undefined,
-    apiTags: undefined,
-    requestDataType: undefined,
-    requestData: undefined,
-    requestHeaders: undefined,
+    apiTags: [],
+    
+    // 重要：保留这些复杂数据的结构而不是设置为undefined
+    requestDataType: "0",
+    requestData: {},
+    requestHeaders: {},
+    params: [],
+    cookies: [],
+    
     remark: undefined,
     createBy: undefined,
     createTime: undefined,
@@ -489,19 +520,46 @@ function handleDebug(row) {
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
-  reset();
+  // 不急于重置表单，可能导致数据丢失
+  // reset(); 
+  
   const apiId = row.apiId || ids.value;
   getApiById(apiId).then((response) => {
-    form.value = response.data;
-    console.log("0----->",form.value)
-    open.value = true;
-    title.value = "修改接口";
-    // 确保在下一个 tick 中设置数据
-    nextTick(() => {
-      if (editApiRef.value) {
-        editApiRef.value.setData(form.value);
-      }
-    });
+    if (response.code === 200 && response.data) {
+      // 获取成功后，再重置表单并填充新数据
+      reset();
+      
+      // 确保复杂对象的结构完整
+      const apiData = {
+        ...response.data,
+        requestData: response.data.requestData || {},
+        requestHeaders: response.data.requestHeaders || {},
+        params: response.data.params || [],
+        cookies: response.data.cookies || []
+      };
+      
+      // 打印原始数据以便调试
+      console.log("从服务器获取的原始数据:", apiData);
+      
+      // 为表单赋值
+      form.value = apiData;
+      
+      // 打开抽屉并设置标题
+      open.value = true;
+      title.value = "修改接口";
+      
+      // 确保在下一个 tick 中设置数据到子组件
+      nextTick(() => {
+        if (editApiRef.value) {
+          editApiRef.value.setData(form.value);
+        }
+      });
+    } else {
+      proxy.$modal.msgError(response.msg || "获取接口数据失败");
+    }
+  }).catch(error => {
+    console.error("获取接口数据错误:", error);
+    proxy.$modal.msgError("获取接口数据出错");
   });
 }
 
@@ -519,8 +577,23 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
     }
   } else if (type === 'debug') {
     try {
-      // 已在子组件中处理调试逻辑
-      console.log('调试成功，收到子组件返回的调试结果');
+      console.log('接收到调试结果:', formData);
+      // 更新当前选中接口的执行状态和时间
+      if (formData && formData.apiId) {
+        // 找到当前接口在列表中的位置
+        const index = apiList.value.findIndex(item => item.apiId === formData.apiId);
+        if (index !== -1) {
+          // 更新最后执行状态和时间
+          apiList.value[index].lastExecutionStatus = formData.lastExecutionStatus || 'SUCCESS';
+          apiList.value[index].lastExecutionTime = formData.lastExecutionTime || new Date().toLocaleString();
+          
+          console.log('已更新接口状态:', apiList.value[index].apiId, apiList.value[index].lastExecutionStatus, apiList.value[index].lastExecutionTime);
+        } else {
+          console.warn('未找到对应的接口:', formData.apiId);
+        }
+      }
+      
+      console.log('调试成功，已更新接口执行状态');
     } catch (error) {
       console.error('Debug Error:', error);
       proxy.$modal.msgError("测试失败：" + (error.message || '未知错误'));

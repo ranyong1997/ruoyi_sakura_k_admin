@@ -113,14 +113,17 @@
 import {defineProps, defineEmits, defineExpose, ref, onMounted, watch} from 'vue'
 
 const props = defineProps({
-  row: {
+  body: {
     type: Object,
-    required: true
+    default: () => null
   }
 });
 
+// 添加调试日志
+console.log('ApiRequestBody组件初始化，body:', props.body);
+
 const emit = defineEmits(['update:body', 'updateContentType'])
-const contentType = ref('application/none')
+const contentType = ref('application/json')
 const jsonContent = ref('{}')
 const none = ref('')
 const textContent = ref('')
@@ -129,26 +132,53 @@ const formDataItems = ref([])
 
 // 监听body变化
 watch(() => props.body, (newBody) => {
+  console.log('Body属性变化:', newBody);
+  
   if (newBody) {
     if (newBody.contentType) {
-      contentType.value = newBody.contentType
+      contentType.value = newBody.contentType;
+      console.log('设置contentType:', contentType.value);
     }
 
-    if (newBody.content) {
+    if (newBody.content !== undefined) {
+      console.log('处理内容，类型:', contentType.value, '内容:', newBody.content);
+      
       if (contentType.value === 'application/json') {
-        jsonContent.value = typeof newBody.content === 'string'
-            ? newBody.content
-            : JSON.stringify(newBody.content, null, 2)
+        try {
+          // 尝试处理JSON内容
+          if (typeof newBody.content === 'string') {
+            // 尝试解析字符串
+            try {
+              JSON.parse(newBody.content);
+              jsonContent.value = newBody.content;
+            } catch (e) {
+              console.warn('JSON解析失败，使用原始内容:', e);
+              jsonContent.value = newBody.content;
+            }
+          } else {
+            // 对象转字符串
+            jsonContent.value = JSON.stringify(newBody.content, null, 2);
+          }
+          console.log('设置jsonContent:', jsonContent.value);
+        } catch (e) {
+          console.error('处理JSON内容失败:', e);
+          jsonContent.value = newBody.content || '{}';
+        }
       } else if (contentType.value === 'application/none') {
-        none.value = newBody.content
+        none.value = newBody.content;
       } else if (contentType.value === 'text/plain') {
-        textContent.value = newBody.content
+        textContent.value = newBody.content;
       } else if (contentType.value === 'application/x-www-form-urlencoded') {
-        formItems.value = Array.isArray(newBody.content) ? newBody.content : []
+        formItems.value = Array.isArray(newBody.content) ? [...newBody.content] : [];
       } else if (contentType.value === 'multipart/form-data') {
-        formDataItems.value = Array.isArray(newBody.content) ? newBody.content : []
+        formDataItems.value = Array.isArray(newBody.content) ? [...newBody.content] : [];
       }
     }
+  } else {
+    // 设置默认值
+    console.log('Body属性为空，设置默认值');
+    contentType.value = 'application/json';
+    jsonContent.value = '{}';
   }
 }, {deep: true, immediate: true})
 
@@ -190,11 +220,10 @@ const handleContentTypeChange = (type) => {
 }
 //
 const handleFileChange = (file) => {
-  // 当选择文件时更新row中的相关数据
-  if (props.row && props.row.type === 'file') {
-    // 这里可以保存文件信息到row对象
-    props.row.file = file;
-    // 更新父组件数据
+  // 当选择文件时更新数据
+  if (file) {
+    console.log('文件已选择:', file.name);
+    // 更新相关数据
     updateFormDataBody();
   }
 };

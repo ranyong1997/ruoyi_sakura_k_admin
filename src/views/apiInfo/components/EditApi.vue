@@ -107,38 +107,82 @@ const updateContentType = (contentType) => {
 }
 
 const setData = (data) => {
-  ApiInfoRef.value?.setData(data)
+  console.log('设置数据到EditApi:', data);
+  
+  // 保存原始请求参数数据以便后续调试
+  if (data) {
+    // 保存原始数据的深拷贝
+    const savedData = JSON.parse(JSON.stringify(data));
+    console.log('保存原始数据:', savedData);
+  }
+  
+  // 设置基本信息
+  ApiInfoRef.value?.setData(data);
 
   // 设置请求参数数据
   if (data.params) {
-    paramsData.value = data.params
+    console.log('设置params参数:', data.params);
+    paramsData.value = Array.isArray(data.params) ? [...data.params] : [];
+  } else {
+    paramsData.value = [];
   }
 
   // 处理 requestHeaders 对象转换为数组
   if (data.requestHeaders) {
-    const headersArray = []
+    console.log('设置requestHeaders:', data.requestHeaders);
+    const headersArray = [];
     for (const key in data.requestHeaders) {
       if (Object.hasOwnProperty.call(data.requestHeaders, key)) {
         headersArray.push({
           name: key,
           value: data.requestHeaders[key],
           description: ''
-        })
+        });
       }
     }
-    headersData.value = headersArray
+    headersData.value = headersArray;
+  } else {
+    headersData.value = [];
   }
 
+  // 设置cookies
   if (data.cookies) {
-    cookiesData.value = data.cookies
+    console.log('设置cookies:', data.cookies);
+    cookiesData.value = Array.isArray(data.cookies) ? [...data.cookies] : [];
+  } else {
+    cookiesData.value = [];
   }
 
+  // 设置请求体数据
   if (data.requestData) {
+    console.log('设置requestData:', data.requestData);
+    // 如果已有contentType，使用它，否则默认为application/json
+    const contentType = data.requestHeaders && 
+                        Object.keys(data.requestHeaders).some(key => key.toLowerCase() === 'content-type') 
+                        ? data.requestHeaders['Content-Type'] || data.requestHeaders['content-type'] 
+                        : 'application/json';
+    
+    bodyData.value = {
+      contentType: contentType,
+      content: typeof data.requestData === 'string' 
+        ? data.requestData 
+        : JSON.stringify(data.requestData, null, 2)
+    };
+  } else {
+    // 即使没有requestData，也要初始化为默认值
     bodyData.value = {
       contentType: 'application/json',
-      content: JSON.stringify(data.requestData, null, 2)
-    }
+      content: '{}'
+    };
   }
+  
+  // 确保所有数据已正确设置
+  console.log('设置后的数据状态:', {
+    params: paramsData.value,
+    headers: headersData.value,
+    body: bodyData.value,
+    cookies: cookiesData.value
+  });
 }
 
 const getData = () => {
