@@ -160,6 +160,7 @@
     <!-- 测试报告弹窗 -->
     <ReportDialog 
       :visible="state.showReportDialog" 
+      @update:visible="state.showReportDialog = $event"
       :reportData="reportData"
       @close="closeReportDialog" 
     />

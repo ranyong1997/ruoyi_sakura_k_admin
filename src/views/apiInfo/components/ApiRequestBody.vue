@@ -1,7 +1,7 @@
 <template>
   <div class="body-container">
     <div class="content-type-selector">
-      <el-radio-group v-model="contentType" @change="handleContentTypeChange">
+      <el-radio-group v-model="localContentType" @change="handleContentTypeChange">
         <el-radio-button label="application/none">none</el-radio-button>
         <el-radio-button label="application/json">json</el-radio-button>
         <el-radio-button label="multipart/form-data">form-data</el-radio-button>
@@ -12,7 +12,7 @@
 
     <div class="body-editor-container">
       <!-- JSON编辑器 -->
-      <div v-if="contentType === 'application/json'" class="editor-wrapper">
+      <div v-if="localContentType === 'application/json'" class="editor-wrapper">
         <el-input
             v-model="jsonContent"
             type="textarea"
@@ -25,7 +25,7 @@
         </div>
       </div>
       <!-- Text编辑器 -->
-      <div v-else-if="contentType === 'text/plain'" class="editor-wrapper">
+      <div v-else-if="localContentType === 'text/plain'" class="editor-wrapper">
         <el-input
             v-model="textContent"
             type="textarea"
@@ -34,12 +34,12 @@
         />
       </div>
       <!-- Form表单 -->
-      <div v-else-if="contentType === 'application/none'" class="editor-wrapper">
+      <div v-else-if="localContentType === 'application/none'" class="editor-wrapper">
         <el-table :data="formItems" style="width: 100%" border>
         </el-table>
       </div>
       <!-- x-www-form-urlencoded -->
-      <div v-else-if="contentType === 'application/x-www-form-urlencoded'" class="editor-wrapper">
+      <div v-else-if="localContentType === 'application/x-www-form-urlencoded'" class="editor-wrapper">
         <el-table :data="formItems" style="width: 100%" border>
           <el-table-column prop="key" label="Key" min-width="180">
             <template #default="{ row, $index }">
@@ -62,7 +62,7 @@
         </div>
       </div>
       <!-- Form Data表单 -->
-      <div v-else-if="contentType === 'multipart/form-data'" class="editor-wrapper">
+      <div v-else-if="localContentType === 'multipart/form-data'" class="editor-wrapper">
         <el-table :data="formDataItems" style="width: 100%" border>
           <el-table-column prop="key" label="Key" min-width="180">
             <template #default="{ row, $index }">
@@ -123,70 +123,75 @@ const props = defineProps({
 console.log('ApiRequestBody组件初始化，body:', props.body);
 
 const emit = defineEmits(['update:body', 'updateContentType'])
-const contentType = ref('application/json')
+
+// 使用本地变量，避免直接修改props
+const localContentType = ref('application/json')
 const jsonContent = ref('{}')
 const none = ref('')
 const textContent = ref('')
 const formItems = ref([])
 const formDataItems = ref([])
 
-// 监听body变化
-watch(() => props.body, (newBody) => {
-  console.log('Body属性变化:', newBody);
-  
-  if (newBody) {
-    if (newBody.contentType) {
-      contentType.value = newBody.contentType;
-      console.log('设置contentType:', contentType.value);
-    }
-
-    if (newBody.content !== undefined) {
-      console.log('处理内容，类型:', contentType.value, '内容:', newBody.content);
-      
-      if (contentType.value === 'application/json') {
-        try {
-          // 尝试处理JSON内容
-          if (typeof newBody.content === 'string') {
-            // 尝试解析字符串
-            try {
-              JSON.parse(newBody.content);
-              jsonContent.value = newBody.content;
-            } catch (e) {
-              console.warn('JSON解析失败，使用原始内容:', e);
-              jsonContent.value = newBody.content;
-            }
-          } else {
-            // 对象转字符串
-            jsonContent.value = JSON.stringify(newBody.content, null, 2);
-          }
-          console.log('设置jsonContent:', jsonContent.value);
-        } catch (e) {
-          console.error('处理JSON内容失败:', e);
-          jsonContent.value = newBody.content || '{}';
-        }
-      } else if (contentType.value === 'application/none') {
-        none.value = newBody.content;
-      } else if (contentType.value === 'text/plain') {
-        textContent.value = newBody.content;
-      } else if (contentType.value === 'application/x-www-form-urlencoded') {
-        formItems.value = Array.isArray(newBody.content) ? [...newBody.content] : [];
-      } else if (contentType.value === 'multipart/form-data') {
-        formDataItems.value = Array.isArray(newBody.content) ? [...newBody.content] : [];
-      }
-    }
-  } else {
+// 初始化本地状态
+const initLocalState = (bodyData) => {
+  if (!bodyData) {
     // 设置默认值
-    console.log('Body属性为空，设置默认值');
-    contentType.value = 'application/json';
-    jsonContent.value = '{}';
+    localContentType.value = 'application/json'
+    jsonContent.value = '{}'
+    return
   }
+
+  if (bodyData.contentType) {
+    localContentType.value = bodyData.contentType
+  }
+
+  if (bodyData.content !== undefined) {
+    console.log('处理内容，类型:', localContentType.value, '内容:', bodyData.content)
+    
+    if (localContentType.value === 'application/json') {
+      try {
+        // 尝试处理JSON内容
+        if (typeof bodyData.content === 'string') {
+          // 尝试解析字符串
+          try {
+            JSON.parse(bodyData.content)
+            jsonContent.value = bodyData.content
+          } catch (e) {
+            console.warn('JSON解析失败，使用原始内容:', e)
+            jsonContent.value = bodyData.content
+          }
+        } else {
+          // 对象转字符串
+          jsonContent.value = JSON.stringify(bodyData.content, null, 2)
+        }
+        console.log('设置jsonContent:', jsonContent.value)
+      } catch (e) {
+        console.error('处理JSON内容失败:', e)
+        jsonContent.value = bodyData.content || '{}'
+      }
+    } else if (localContentType.value === 'application/none') {
+      none.value = bodyData.content
+    } else if (localContentType.value === 'text/plain') {
+      textContent.value = bodyData.content
+    } else if (localContentType.value === 'application/x-www-form-urlencoded') {
+      formItems.value = Array.isArray(bodyData.content) ? [...bodyData.content] : []
+    } else if (localContentType.value === 'multipart/form-data') {
+      formDataItems.value = Array.isArray(bodyData.content) ? [...bodyData.content] : []
+    }
+  }
+}
+
+// 监听props变化
+watch(() => props.body, (newBody) => {
+  console.log('Body属性变化:', newBody)
+  initLocalState(newBody)
 }, {deep: true, immediate: true})
 
 // 初始化
 onMounted(() => {
   if (!props.body) {
     emit('update:body', {
-      contentType: contentType.value,
+      contentType: localContentType.value,
       content: '{}'
     })
   }
@@ -194,7 +199,7 @@ onMounted(() => {
 
 // 内容类型变更
 const handleContentTypeChange = (type) => {
-  contentType.value = type
+  localContentType.value = type
   emit('updateContentType', type)
 
   // 重置Body内容
@@ -208,8 +213,8 @@ const handleContentTypeChange = (type) => {
   } else if (type === 'multipart/form-data') {
     content = []
     formDataItems.value = content
-  } else if (type === 'multipart/raw') {
-    content = null
+  } else if (type === 'text/plain') {
+    content = ''
     textContent.value = content
   }
 
@@ -218,15 +223,15 @@ const handleContentTypeChange = (type) => {
     content: content
   })
 }
-//
+
 const handleFileChange = (file) => {
   // 当选择文件时更新数据
   if (file) {
-    console.log('文件已选择:', file.name);
+    console.log('文件已选择:', file.name)
     // 更新相关数据
-    updateFormDataBody();
+    updateFormDataBody()
   }
-};
+}
 
 // JSON格式化
 const formatJson = () => {
@@ -243,16 +248,16 @@ const formatJson = () => {
 // 更新请求体
 const updateBody = () => {
   let content = ''
-  if (contentType.value === 'application/json') {
+  if (localContentType.value === 'application/json') {
     content = jsonContent.value
-  } else if (contentType.value === 'application/form-data') {
+  } else if (localContentType.value === 'application/form-data') {
     content = formDataItems.value
-  } else if (contentType.value === 'text/plain') {
+  } else if (localContentType.value === 'text/plain') {
     content = textContent.value
   }
 
   emit('update:body', {
-    contentType: contentType.value,
+    contentType: localContentType.value,
     content: content
   })
 }
@@ -273,7 +278,7 @@ const removeFormItem = (index) => {
 
 const updateFormBody = () => {
   emit('update:body', {
-    contentType: contentType.value,
+    contentType: localContentType.value,
     content: formItems.value
   })
 }
@@ -295,19 +300,19 @@ const removeFormDataItem = (index) => {
 
 const updateFormDataBody = () => {
   emit('update:body', {
-    contentType: contentType.value,
+    contentType: localContentType.value,
     content: formDataItems.value
-  });
-};
+  })
+}
 
 const getDataLength = () => {
-  if (contentType.value === 'application/json') {
+  if (localContentType.value === 'application/json') {
     return jsonContent.value && jsonContent.value !== '{}' ? 1 : 0
-  } else if (contentType.value === 'text/plain') {
+  } else if (localContentType.value === 'text/plain') {
     return textContent.value ? 1 : 0
-  } else if (contentType.value === 'application/x-www-form-urlencoded') {
+  } else if (localContentType.value === 'application/x-www-form-urlencoded') {
     return formItems.value.length
-  } else if (contentType.value === 'multipart/form-data') {
+  } else if (localContentType.value === 'multipart/form-data') {
     return formDataItems.value.length
   }
   return 0

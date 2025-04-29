@@ -1,19 +1,19 @@
 <template>
   <div class="headers-container">
-    <el-table :data="headers" style="width: 100%" border>
+    <el-table :data="localHeaders" style="width: 100%" border>
       <el-table-column prop="name" label="Header名" min-width="180">
         <template #default="{ row, $index }">
-          <el-input v-model="row.name" placeholder="请输入Header名称" />
+          <el-input v-model="row.name" placeholder="请输入Header名称" @input="updateHeaders" />
         </template>
       </el-table-column>
       <el-table-column prop="value" label="值" min-width="240">
         <template #default="{ row, $index }">
-          <el-input v-model="row.value" placeholder="请输入Header值" />
+          <el-input v-model="row.value" placeholder="请输入Header值" @input="updateHeaders" />
         </template>
       </el-table-column>
       <el-table-column prop="description" label="说明" min-width="180">
         <template #default="{ row, $index }">
-          <el-input v-model="row.description" placeholder="请输入说明" />
+          <el-input v-model="row.description" placeholder="请输入说明" @input="updateHeaders" />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="120" fixed="right">
@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import {defineProps, defineEmits, defineExpose} from 'vue'
+import {defineProps, defineEmits, defineExpose, ref, watch} from 'vue'
 
 const props = defineProps({
   headers: {
@@ -39,26 +39,39 @@ const props = defineProps({
   }
 })
 
+// 本地状态，避免直接修改props
+const localHeaders = ref([...props.headers])
+
+// 监听props变化
+watch(() => props.headers, (newHeaders) => {
+  localHeaders.value = [...newHeaders]
+}, { deep: true })
+
 const emit = defineEmits(['update:headers'])
+
+// 更新父组件中的数据
+const updateHeaders = () => {
+  emit('update:headers', [...localHeaders.value])
+}
+
 // 添加Header
 const addHeader = () => {
-  const newHeaders = [...props.headers]
-  newHeaders.push({
+  localHeaders.value.push({
     name: '',
     value: '',
     description: ''
   })
-  emit('update:headers', newHeaders)
+  updateHeaders()
 }
+
 // 移除Header
 const removeHeader = (index) => {
-  const newHeaders = [...props.headers]
-  newHeaders.splice(index, 1)
-  emit('update:headers', newHeaders)
+  localHeaders.value.splice(index, 1)
+  updateHeaders()
 }
 
 const getDataLength = () => {
-  return props.headers.length
+  return localHeaders.value.length
 }
 
 defineExpose({

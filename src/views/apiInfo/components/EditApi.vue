@@ -16,7 +16,11 @@
                     <span class="ui-badge-circle" v-show="paramsData.length">{{ paramsData.length }}</span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestParams ref="ApiRequestParamsRef" v-model:params="paramsData" />
+                    <ApiRequestParams 
+                      ref="ApiRequestParamsRef" 
+                      :params="paramsData"
+                      @update:params="updateParams" 
+                    />
                   </div>
                 </el-tab-pane>
                 <el-tab-pane name="body">
@@ -25,7 +29,12 @@
                     <span class="ui-badge-status-dot" v-show="bodyData"></span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestBody ref="ApiRequestBodyRef" v-model:body="bodyData" @updateContentType="updateContentType"/>
+                    <ApiRequestBody 
+                      ref="ApiRequestBodyRef" 
+                      :body="bodyData"
+                      @update:body="updateBody"
+                      @updateContentType="updateContentType"
+                    />
                   </div>
                 </el-tab-pane>
                 <el-tab-pane name="headers">
@@ -34,7 +43,11 @@
                     <span class="ui-badge-circle" v-show="headersData.length">{{ headersData.length }}</span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestHeaders ref="ApiRequestHeadersRef" v-model:headers="headersData" />
+                    <ApiRequestHeaders 
+                      ref="ApiRequestHeadersRef" 
+                      :headers="headersData"
+                      @update:headers="updateHeaders" 
+                    />
                   </div>
                 </el-tab-pane>
                 <el-tab-pane name="cookies">
@@ -43,7 +56,11 @@
                     <span class="ui-badge-circle" v-show="cookiesData.length">{{ cookiesData.length }}</span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestCookies ref="ApiRequestCookiesRef" v-model:cookies="cookiesData" />
+                    <ApiRequestCookies 
+                      ref="ApiRequestCookiesRef" 
+                      :cookies="cookiesData"
+                      @update:cookies="updateCookies" 
+                    />
                   </div>
                 </el-tab-pane>
               </el-tabs>
@@ -84,6 +101,23 @@ const paramsData = ref([])
 const headersData = ref([])
 const cookiesData = ref([])
 const bodyData = ref(null)
+
+// 更新函数
+const updateParams = (newParams) => {
+  paramsData.value = newParams
+}
+
+const updateHeaders = (newHeaders) => {
+  headersData.value = newHeaders
+}
+
+const updateCookies = (newCookies) => {
+  cookiesData.value = newCookies
+}
+
+const updateBody = (newBody) => {
+  bodyData.value = newBody
+}
 
 const handleSaveOrUpdateOrDebug = (type) => {
   // 获取完整表单数据
