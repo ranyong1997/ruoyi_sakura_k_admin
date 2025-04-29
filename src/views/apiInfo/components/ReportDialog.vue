@@ -207,7 +207,6 @@
               <el-tag :type="getHttpStatusTagType(scope.row.statusCode)" effect="light">
                 {{ scope.row.statusCode }} 
               </el-tag>
-              <div class="status-text">{{ getStatusText(scope.row.statusCode) }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="responseTime" label="耗时(ms)" width="100" align="center">
@@ -367,6 +366,7 @@ const props = defineProps({
   }
 });
 
+console.log("props.reportData",props.reportData)
 // 使用本地变量代替直接的v-model绑定
 const localVisible = ref(props.visible);
 
