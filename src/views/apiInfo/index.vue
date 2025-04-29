@@ -186,13 +186,15 @@
           label="最后执行状态"
           width="120"
           align="center"
-          prop="lastExecutionStatus"
+          prop="last_run_status"
           :show-overflow-tooltip="true"
       >
         <template #default="scope">
-          <el-tag v-if="scope.row.lastExecutionStatus" :type="getStatusTagType(scope.row.lastExecutionStatus)">
-            {{ scope.row.lastExecutionStatus }}
-          </el-tag>
+          <dict-tag
+              v-if="scope.row.last_run_status !== null"
+              :options="sys_common_status"
+              :value="scope.row.last_run_status"
+          />
           <span v-else>--</span>
         </template>
       </el-table-column>
@@ -200,7 +202,8 @@
           label="最后执行时间"
           width="180"
           align="center"
-          prop="lastExecutionTime"
+          prop="last_run_time"
+          :formatter="(row) => parseTime(row.last_run_time)"
           :show-overflow-tooltip="true"
       />
       <el-table-column
@@ -270,7 +273,7 @@
 </template>
 
 <script setup name="Api">
-import {ref, getCurrentInstance, reactive, computed, nextTick} from 'vue'
+import {ref, getCurrentInstance, reactive, computed, nextTick, toRefs} from 'vue'
 import {
   delApi,
   getApiById,
@@ -280,7 +283,7 @@ import {
 import EditApi from "./components/EditApi.vue";
 const {proxy} = getCurrentInstance();
 const editApiRef = ref(null);
-const {sys_normal_disable} = proxy.useDict("sys_normal_disable");
+const {sys_normal_disable, sys_common_status} = proxy.useDict("sys_normal_disable", "sys_common_status");
 const apiList = ref([]);
 const open = ref(false);
 const loading = ref(true);
@@ -509,7 +512,7 @@ function handleDebug(row) {
   getApiById(apiId).then((response) => {
     form.value = response.data;
     open.value = true;
-    title.value = "待开发";
+    title.value = "运行接口";
     nextTick(() => {
       if (editApiRef.value) {
         editApiRef.value.setData(form.value);
@@ -584,10 +587,10 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
         const index = apiList.value.findIndex(item => item.apiId === formData.apiId);
         if (index !== -1) {
           // 更新最后执行状态和时间
-          apiList.value[index].lastExecutionStatus = formData.lastExecutionStatus || 'SUCCESS';
-          apiList.value[index].lastExecutionTime = formData.lastExecutionTime || new Date().toLocaleString();
+          apiList.value[index].last_run_status = formData.last_run_status || 'SUCCESS';
+          apiList.value[index].last_run_time = formData.last_run_time || new Date().toLocaleString();
           
-          console.log('已更新接口状态:', apiList.value[index].apiId, apiList.value[index].lastExecutionStatus, apiList.value[index].lastExecutionTime);
+          console.log('已更新接口状态:', apiList.value[index].apiId, apiList.value[index].last_run_status, apiList.value[index].last_run_time);
         } else {
           console.warn('未找到对应的接口:', formData.apiId);
         }

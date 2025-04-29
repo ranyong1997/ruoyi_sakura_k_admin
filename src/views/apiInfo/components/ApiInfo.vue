@@ -217,7 +217,9 @@ const createForm = () => {
     requestData: {},
     requestDataType: 0,
     requestHeaders: {},
-    remark: ""
+    remark: "",
+    last_run_status: null,
+    last_run_time: null
   }
 }
 // 获取环境列表
@@ -328,7 +330,9 @@ const setData = (formData) => {
       requestDataType: formData.requestDataType || '0', // 0[none] 1[json] 2[form] 3[x_form] 4[raw]
       requestHeaders: formData.requestHeaders || {},
       apiLevel: formData.apiLevel || 'P0',
-      remark: formData.remark || ""
+      remark: formData.remark || "",
+      last_run_status: formData.last_run_status || null,
+      last_run_time: formData.last_run_time || null
     };
   }
   nextTick(() => {
@@ -523,8 +527,25 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
         
         // 无论API响应如何，我们都显示报告
         // 设置最后执行状态和时间
-        state.lastExecutionStatus = 'SUCCESS';
-        state.lastExecutionTime = formatDate(new Date(), "YYYY-MM-DD HH:mm:ss");
+        const isSuccess = (response && response.code === 200 && (response.data?.success !== false));
+        
+        // 更新表单中的执行状态和时间 - 使用与后台期望的格式
+        state.form.last_run_status = isSuccess ? '0' : '1'; // 0正常 1失败
+        state.form.last_run_time = formatDate(new Date(), "YYYY-MM-DD HH:mm:ss");
+        
+        // 保存最后执行状态到后端
+        if (formData.apiId) {
+          try {
+            const updateResponse = await updateApi({
+              apiId: formData.apiId,
+              last_run_status: state.form.last_run_status,
+              last_run_time: state.form.last_run_time
+            });
+            console.log('更新执行状态结果:', updateResponse);
+          } catch (updateError) {
+            console.error('更新执行状态失败:', updateError);
+          }
+        }
         
         // 处理报告数据
         console.log('处理报告数据');
@@ -547,8 +568,8 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
         console.log('通知父组件');
         emitSaveOrUpdateOrDebug('debug', {
           apiId: formData.apiId,
-          lastExecutionStatus: state.lastExecutionStatus,
-          lastExecutionTime: state.lastExecutionTime
+          last_run_status: state.form.last_run_status,
+          last_run_time: state.form.last_run_time
         });
         
         if (response && response.code === 200) {
