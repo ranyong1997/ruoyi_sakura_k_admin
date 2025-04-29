@@ -218,8 +218,8 @@ const createForm = () => {
     requestDataType: 0,
     requestHeaders: {},
     remark: "",
-    last_run_status: null,
-    last_run_time: null
+    lastRunStatus: null,
+    lastRunTime: null
   }
 }
 // 获取环境列表
@@ -331,8 +331,8 @@ const setData = (formData) => {
       requestHeaders: formData.requestHeaders || {},
       apiLevel: formData.apiLevel || 'P0',
       remark: formData.remark || "",
-      last_run_status: formData.last_run_status || null,
-      last_run_time: formData.last_run_time || null
+      lastRunStatus: formData.lastRunStatus || null,
+      lastRunTime: formData.lastRunTime || null
     };
   }
   nextTick(() => {
@@ -530,17 +530,34 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
         const isSuccess = (response && response.code === 200 && (response.data?.success !== false));
         
         // 更新表单中的执行状态和时间 - 使用与后台期望的格式
-        state.form.last_run_status = isSuccess ? '0' : '1'; // 0正常 1失败
-        state.form.last_run_time = formatDate(new Date(), "YYYY-MM-DD HH:mm:ss");
+        state.form.lastRunStatus = isSuccess ? '0' : '1'; // 0正常 1失败
+        state.form.lastRunTime = new Date().toISOString();
         
         // 保存最后执行状态到后端
         if (formData.apiId) {
           try {
-            const updateResponse = await updateApi({
+            // 构建完整的API对象，确保包含所有必需字段
+            const completeApiData = {
               apiId: formData.apiId,
-              last_run_status: state.form.last_run_status,
-              last_run_time: state.form.last_run_time
-            });
+              apiName: formData.apiName || state.form.apiName,
+              projectId: formData.projectId || state.form.projectId,
+              apiMethod: formData.apiMethod || state.form.apiMethod,
+              apiUrl: formData.apiUrl || state.form.apiUrl,
+              apiStatus: formData.apiStatus || state.form.apiStatus || "0",
+              apiLevel: formData.apiLevel || state.form.apiLevel,
+              apiTags: formData.apiTags || state.form.apiTags || [],
+              requestDataType: formData.requestDataType || state.form.requestDataType || 0,
+              requestParams: formData.requestParams || formData.params || state.form.params || [],
+              requestData: formData.requestData || state.form.requestData || {},
+              requestHeaders: formData.requestHeaders || state.form.requestHeaders || {},
+              cookie: formData.cookie || "",
+              lastRunStatus: state.form.lastRunStatus,
+              lastRunTime: state.form.lastRunTime,
+              remark: formData.remark || state.form.remark || ""
+            };
+            
+            // 使用完整参数的更新函数
+            const updateResponse = await updateApi(completeApiData);
             console.log('更新执行状态结果:', updateResponse);
           } catch (updateError) {
             console.error('更新执行状态失败:', updateError);
@@ -568,8 +585,8 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
         console.log('通知父组件');
         emitSaveOrUpdateOrDebug('debug', {
           apiId: formData.apiId,
-          last_run_status: state.form.last_run_status,
-          last_run_time: state.form.last_run_time
+          lastRunStatus: state.form.lastRunStatus,
+          lastRunTime: state.form.lastRunTime
         });
         
         if (response && response.code === 200) {

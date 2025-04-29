@@ -47,19 +47,9 @@ export function getApiById(apiId) {
 }
 
 // 根据 ID 调试接口
-// export function testApiById(apiId, envId) {
-//     return request({
-//         url: baseurl + '/debugApi',
-//         method: 'post',
-//         data: {
-//             apiId: apiId,
-//             envId: envId
-//         }
-//     })
-// }
 export function testApiById(apiId, envId) {
     return request({
         url: `${baseurl}/debugApi?api_id=${apiId}&env_id=${envId}`,
-        method: 'post',
+        method: 'post'
     })
 }

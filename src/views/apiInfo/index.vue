@@ -186,14 +186,14 @@
           label="最后执行状态"
           width="120"
           align="center"
-          prop="last_run_status"
+          prop="lastRunStatus"
           :show-overflow-tooltip="true"
       >
         <template #default="scope">
           <dict-tag
-              v-if="scope.row.last_run_status !== null"
+              v-if="scope.row.lastRunStatus !== null"
               :options="sys_common_status"
-              :value="scope.row.last_run_status"
+              :value="scope.row.lastRunStatus"
           />
           <span v-else>--</span>
         </template>
@@ -202,8 +202,8 @@
           label="最后执行时间"
           width="180"
           align="center"
-          prop="last_run_time"
-          :formatter="(row) => parseTime(row.last_run_time)"
+          prop="lastRunTime"
+          :formatter="(row) => parseTime(row.lastRunTime)"
           :show-overflow-tooltip="true"
       />
       <el-table-column
@@ -586,11 +586,20 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
         // 找到当前接口在列表中的位置
         const index = apiList.value.findIndex(item => item.apiId === formData.apiId);
         if (index !== -1) {
-          // 更新最后执行状态和时间
-          apiList.value[index].last_run_status = formData.last_run_status || 'SUCCESS';
-          apiList.value[index].last_run_time = formData.last_run_time || new Date().toLocaleString();
+          // 更新最后执行状态和时间以及其他关键字段
+          apiList.value[index].lastRunStatus = formData.lastRunStatus || '0';
+          apiList.value[index].lastRunTime = formData.lastRunTime || new Date().toISOString();
           
-          console.log('已更新接口状态:', apiList.value[index].apiId, apiList.value[index].last_run_status, apiList.value[index].last_run_time);
+          // 同步更新其他可能已修改的字段
+          apiList.value[index].apiName = formData.apiName || apiList.value[index].apiName;
+          apiList.value[index].apiUrl = formData.apiUrl || apiList.value[index].apiUrl;
+          apiList.value[index].apiMethod = formData.apiMethod || apiList.value[index].apiMethod;
+          apiList.value[index].apiLevel = formData.apiLevel || apiList.value[index].apiLevel;
+          apiList.value[index].apiStatus = formData.apiStatus || apiList.value[index].apiStatus;
+          
+          console.log('已更新接口状态:', apiList.value[index].apiId, 
+                     '状态:', apiList.value[index].lastRunStatus, 
+                     '时间:', apiList.value[index].lastRunTime);
         } else {
           console.warn('未找到对应的接口:', formData.apiId);
         }
