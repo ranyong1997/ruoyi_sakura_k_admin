@@ -50,6 +50,6 @@ export function getApiById(apiId) {
 export function testApiById(apiId, envId) {
     return request({
         url: `${baseurl}/debugApi?api_id=${apiId}&env_id=${envId}`,
-        method: 'post'
+        method: 'post',
     })
 }

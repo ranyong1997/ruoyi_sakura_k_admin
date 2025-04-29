@@ -171,7 +171,7 @@
 import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
-import {addApi, testApiById, updateApi, updateApiStatus, updateApiStatusFull} from "@/api/apiInfo/apiInfo";
+import {addApi, testApiById, updateApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
 import {listEnv} from "@/api/envinfo/envinfo"
 import {formatDate} from '@/components/monaco/formatTime';
@@ -536,8 +536,8 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
         // 保存最后执行状态到后端
         if (formData.apiId) {
           try {
-            // 构建完整的API对象，确保包含所有必需字段
-            const completeApiData = {
+            // 从调试结果获取 time 并更新接口的 lastRunTime 和 lastRunStatus
+            const updateResponse = await updateApi({
               apiId: formData.apiId,
               apiName: formData.apiName || state.form.apiName,
               projectId: formData.projectId || state.form.projectId,
@@ -553,11 +553,12 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
               cookie: formData.cookie || "",
               lastRunStatus: state.form.lastRunStatus,
               lastRunTime: state.form.lastRunTime,
+              createBy: formData.createBy || state.form.createBy || "",
+              createTime: formData.createTime || state.form.createTime || "",
+              updateBy: formData.updateBy || state.form.updateBy || "",
+              updateTime: formData.updateTime || state.form.updateTime || "",
               remark: formData.remark || state.form.remark || ""
-            };
-            
-            // 使用完整参数的更新函数
-            const updateResponse = await updateApiStatusFull(completeApiData);
+            });
             console.log('更新执行状态结果:', updateResponse);
           } catch (updateError) {
             console.error('更新执行状态失败:', updateError);
