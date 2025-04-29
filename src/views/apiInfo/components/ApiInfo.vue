@@ -529,9 +529,32 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
         // 设置最后执行状态和时间
         const isSuccess = (response && response.code === 200 && (response.data?.success !== false));
         
+        // 调试：打印完整的响应结构，方便排查time字段位置
+        console.log('调试响应结构:', JSON.stringify(response));
+        
+        // 尝试从多个可能的位置获取time
+        let responseTime = null;
+        if (response?.data?.time) {
+          responseTime = response.data.time;
+          console.log('从data.time获取到时间:', responseTime);
+        } else if (response?.data?.response?.time) {
+          responseTime = response.data.response.time;
+          console.log('从data.response.time获取到时间:', responseTime);
+        } else if (response?.time) {
+          responseTime = response.time;
+          console.log('从response.time获取到时间:', responseTime);
+        } else if (response?.data?.responseTime) {
+          responseTime = response.data.responseTime;
+          console.log('从data.responseTime获取到时间:', responseTime);
+        } else {
+          // 如果找不到，使用当前时间
+          responseTime = new Date().toISOString();
+          console.log('未找到时间字段，使用当前时间:', responseTime);
+        }
+        
         // 更新表单中的执行状态和时间 - 使用与后台期望的格式
         state.form.lastRunStatus = isSuccess ? '0' : '1'; // 0正常 1失败
-        state.form.lastRunTime = new Date().toISOString();
+        state.form.lastRunTime = responseTime;
         
         // 保存最后执行状态到后端
         if (formData.apiId) {
