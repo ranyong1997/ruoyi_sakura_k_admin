@@ -655,21 +655,46 @@ const processReportData = (data) => {
   
   console.log('处理报告原始数据:', data);
   
-  const currentTime = formatDate(new Date(), "YYYY-MM-DD HH:mm:ss");
+  // 尝试从多个可能的位置获取time
+  let responseTime = null;
+  if (data?.time) {
+    responseTime = data.time;
+    console.log('报告从data.time获取到时间:', responseTime);
+  } else if (data?.response?.time) {
+    responseTime = data.response.time;
+    console.log('报告从data.response.time获取到时间:', responseTime);
+  } else if (data?.responseTime) {
+    responseTime = data.responseTime;
+    console.log('报告从data.responseTime获取到时间:', responseTime);
+  } else {
+    // 如果找不到，使用当前时间
+    responseTime = formatDate(new Date(), "YYYY-MM-DD HH:mm:ss");
+    console.log('报告未找到时间字段，使用当前时间:', responseTime);
+  }
+  
+  // 确定接口调用是否成功
+  const isSuccess = (data.code === 200 || 
+                     data.statusCode === 200 || 
+                     data.status_code === 200 || 
+                     data.success === true || 
+                     (data.response && data.response.code === 200) ||
+                     (data.status && data.status.toLowerCase() === 'success'));
+  
+  console.log('接口是否调用成功:', isSuccess);
   
   // 1. 处理基本统计信息
   reportData.value = {
     avgRequestTime: data.avgTime || data.summary?.avgTime || 95.41, // 默认值用于测试
     totalTime: data.totalTime || data.summary?.totalTime || 0.098,  // 默认值用于测试
     totalCases: 1, // 假设每次调试就是一个用例
-    successCases: data.success || data.summary?.success ? 1 : 0,
-    failCases: data.success || data.summary?.success ? 0 : 1,
+    successCases: isSuccess ? 1 : 0,
+    failCases: isSuccess ? 0 : 1,
     totalSteps: data.steps?.length || 1,
-    successSteps: data.success || data.summary?.success ? (data.steps?.length || 1) : 0,
-    failSteps: data.success || data.summary?.success ? 0 : 1,
+    successSteps: isSuccess ? (data.steps?.length || 1) : 0,
+    failSteps: isSuccess ? 0 : 1,
     skippedSteps: 0,
     errorSteps: 0,
-    executionTime: currentTime,
+    executionTime: responseTime, // 使用从响应中获取的时间
     executor: 'admin', // 这里可以替换为实际的用户信息
     steps: []
   };
@@ -679,6 +704,11 @@ const processReportData = (data) => {
   // 2. 处理步骤数据
   if (data.steps && Array.isArray(data.steps)) {
     reportData.value.steps = data.steps.map(step => {
+      // 确定步骤是否成功
+      const stepSuccess = step.success === true || 
+                      (step.statusCode >= 200 && step.statusCode < 300) ||
+                      (step.status_code >= 200 && step.status_code < 300);
+      
       return {
         name: step.name || state.form.apiName,
         method: step.method || state.form.apiMethod,
@@ -686,7 +716,7 @@ const processReportData = (data) => {
         statusCode: step.statusCode || step.status_code || 200,
         responseTime: step.responseTime || step.response_time || 0,
         executionTime: step.executionTime || step.execution_time || 0,
-        status: step.success ? 'SUCCESS' : 'FAILED',
+        status: stepSuccess ? 'SUCCESS' : 'FAILED',
         requestBody: step.requestBody || step.request_data,
         requestHeaders: step.requestHeaders || step.request_headers,
         responseBody: step.responseBody || step.response,
@@ -703,7 +733,7 @@ const processReportData = (data) => {
       statusCode: data.statusCode || data.status_code || 200,
       responseTime: data.avgTime || data.avgRequestTime || 95.41,
       executionTime: data.totalTime || 0.098,
-      status: data.success ? 'SUCCESS' : 'FAILED',
+      status: isSuccess ? 'SUCCESS' : 'FAILED',
       requestBody: data.requestBody || data.request_data || state.form.requestData,
       requestHeaders: data.requestHeaders || data.request_headers || state.form.requestHeaders,
       responseBody: data.responseBody || data.response || data,
