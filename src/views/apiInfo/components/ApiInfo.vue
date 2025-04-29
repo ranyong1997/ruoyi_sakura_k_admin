@@ -171,7 +171,7 @@
 import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
-import {addApi, testApiById, updateApi} from "@/api/apiInfo/apiInfo";
+import {addApi, testApiById, updateApi, updateApiStatus, updateApiStatusFull} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
 import {listEnv} from "@/api/envinfo/envinfo"
 import {formatDate} from '@/components/monaco/formatTime';
@@ -557,7 +557,7 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
             };
             
             // 使用完整参数的更新函数
-            const updateResponse = await updateApi(completeApiData);
+            const updateResponse = await updateApiStatusFull(completeApiData);
             console.log('更新执行状态结果:', updateResponse);
           } catch (updateError) {
             console.error('更新执行状态失败:', updateError);
