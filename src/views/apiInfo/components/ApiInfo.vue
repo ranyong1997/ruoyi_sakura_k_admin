@@ -552,7 +552,23 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
           console.log('未找到时间字段，使用当前时间:', responseTime);
         }
         
-        // 更新表单中的执行状态和时间 - 使用与后台期望的格式
+        // 确保时间格式正确
+        try {
+          // 检查是否为ISO格式的时间字符串（如：2025-04-29T15:57:48.573081）
+          if (typeof responseTime === 'string' && responseTime.includes('T')) {
+            // 将其保存为ISO格式，但在UI上将显示格式化的版本
+            const date = new Date(responseTime);
+            if (!isNaN(date.getTime())) {
+              // 保存ISO格式以便传递给后端API
+              responseTime = date.toISOString();
+              console.log('处理后的时间字符串:', responseTime);
+            }
+          }
+        } catch (error) {
+          console.error('时间格式化失败:', error);
+        }
+        
+        // 更新表单中的执行状态和时间
         state.form.lastRunStatus = isSuccess ? '0' : '1'; // 0正常 1失败
         state.form.lastRunTime = responseTime;
         
@@ -668,9 +684,12 @@ const processReportData = (data) => {
     console.log('报告从data.responseTime获取到时间:', responseTime);
   } else {
     // 如果找不到，使用当前时间
-    responseTime = formatDate(new Date(), "YYYY-MM-DD HH:mm:ss");
+    responseTime = new Date().toISOString();
     console.log('报告未找到时间字段，使用当前时间:', responseTime);
   }
+  
+  // 不需要在这里格式化，直接传递ISO格式给ReportDialog组件处理
+  // ReportDialog组件会负责格式化显示
   
   // 确定接口调用是否成功
   const isSuccess = (data.code === 200 || 

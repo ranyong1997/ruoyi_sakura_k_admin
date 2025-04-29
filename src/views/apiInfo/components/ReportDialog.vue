@@ -162,7 +162,7 @@
                 <div class="execution-row">
                   <el-icon><Calendar /></el-icon>
                   <span>执行时间：</span>
-                  <span class="highlight">{{ reportData.executionTime || '-' }}</span>
+                  <span class="highlight">{{ formatExecutionTime(reportData.executionTime) || '-' }}</span>
                 </div>
                 <div class="execution-row">
                   <el-icon><User /></el-icon>
@@ -493,6 +493,32 @@ const formatJson = (json) => {
     }
   } catch (e) {
     return json;
+  }
+};
+
+// 添加时间格式化方法
+const formatExecutionTime = (timeStr) => {
+  if (!timeStr) return '-';
+  try {
+    // 处理ISO格式时间字符串 (2025-04-29T15:57:48.573081)
+    if (typeof timeStr === 'string' && timeStr.includes('T')) {
+      const date = new Date(timeStr);
+      if (!isNaN(date.getTime())) {
+        // 手动格式化为 YYYY-MM-DD HH:mm:ss
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      }
+    }
+    return timeStr; // 如果不是ISO格式，原样返回
+  } catch (error) {
+    console.error('格式化执行时间失败:', error, timeStr);
+    return timeStr; // 出错时返回原始值
   }
 };
 </script>
