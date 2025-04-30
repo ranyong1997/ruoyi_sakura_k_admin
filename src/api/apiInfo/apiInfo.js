@@ -53,3 +53,11 @@ export function testApiById(apiId, envId) {
         method: 'post',
     })
 }
+
+// 根据 ID 复制项目
+export function copyApiById(apiId) {
+    return request({
+        url: baseurl + '/copy/' + apiId,
+        method: 'post'
+    })
+}

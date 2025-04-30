@@ -232,15 +232,11 @@
                 v-hasPermi="['apitest:apiInfo:edit']"
             ></el-button>
           </el-tooltip>
-          <!--          <el-tooltip content="复制" placement="top">-->
-          <!--            <el-button-->
-          <!--                link-->
-          <!--                type="primary"-->
-          <!--                icon="Connection"-->
-          <!--                @click="handleUpdate(scope.row)"-->
-          <!--                v-hasPermi="['apitest:apiInfo:edit']"-->
-          <!--            ></el-button>-->
-          <!--          </el-tooltip>-->
+          <el-tooltip content="复制" placement="top">
+            <el-button link type="primary" icon="CopyDocument" @click="handleCopy(scope.row)"
+                       v-hasPermi="['apitest:apiInfo:copy']"
+            ></el-button>
+          </el-tooltip>
           <el-tooltip content="删除" placement="top">
             <el-button
                 link
@@ -279,8 +275,10 @@ import {
   getApiById,
   listApi,
   testApiById,
+  copyApiById
 } from "@/api/apiInfo/apiInfo";
 import EditApi from "./components/EditApi.vue";
+
 const {proxy} = getCurrentInstance();
 const editApiRef = ref(null);
 const {sys_normal_disable, sys_common_status} = proxy.useDict("sys_normal_disable", "sys_common_status");
@@ -442,14 +440,14 @@ function reset() {
     apiStatus: undefined,
     apiLevel: undefined,
     apiTags: [],
-    
+
     // 重要：保留这些复杂数据的结构而不是设置为undefined
     requestDataType: "0",
     requestData: {},
     requestHeaders: {},
     params: [],
     cookies: [],
-    
+
     remark: undefined,
     createBy: undefined,
     createTime: undefined,
@@ -525,13 +523,13 @@ function handleDebug(row) {
 function handleUpdate(row) {
   // 不急于重置表单，可能导致数据丢失
   // reset(); 
-  
+
   const apiId = row.apiId || ids.value;
   getApiById(apiId).then((response) => {
     if (response.code === 200 && response.data) {
       // 获取成功后，再重置表单并填充新数据
       reset();
-      
+
       // 确保复杂对象的结构完整
       const apiData = {
         ...response.data,
@@ -540,17 +538,17 @@ function handleUpdate(row) {
         params: response.data.params || [],
         cookies: response.data.cookies || []
       };
-      
+
       // 打印原始数据以便调试
       console.log("从服务器获取的原始数据:", apiData);
-      
+
       // 为表单赋值
       form.value = apiData;
-      
+
       // 打开抽屉并设置标题
       open.value = true;
       title.value = "修改接口";
-      
+
       // 确保在下一个 tick 中设置数据到子组件
       nextTick(() => {
         if (editApiRef.value) {
@@ -589,22 +587,22 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
           // 更新最后执行状态和时间以及其他关键字段
           apiList.value[index].lastRunStatus = formData.lastRunStatus || '0';
           apiList.value[index].lastRunTime = formData.lastRunTime || new Date().toISOString();
-          
+
           // 同步更新其他可能已修改的字段
           apiList.value[index].apiName = formData.apiName || apiList.value[index].apiName;
           apiList.value[index].apiUrl = formData.apiUrl || apiList.value[index].apiUrl;
           apiList.value[index].apiMethod = formData.apiMethod || apiList.value[index].apiMethod;
           apiList.value[index].apiLevel = formData.apiLevel || apiList.value[index].apiLevel;
           apiList.value[index].apiStatus = formData.apiStatus || apiList.value[index].apiStatus;
-          
-          console.log('已更新接口状态:', apiList.value[index].apiId, 
-                     '状态:', apiList.value[index].lastRunStatus, 
-                     '时间:', apiList.value[index].lastRunTime);
+
+          console.log('已更新接口状态:', apiList.value[index].apiId,
+              '状态:', apiList.value[index].lastRunStatus,
+              '时间:', apiList.value[index].lastRunTime);
         } else {
           console.warn('未找到对应的接口:', formData.apiId);
         }
       }
-      
+
       console.log('调试成功，已更新接口执行状态');
     } catch (error) {
       console.error('Debug Error:', error);
@@ -612,6 +610,23 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
     }
   }
 };
+
+/** 复制按钮操作 */
+function handleCopy(row) {
+  reset();
+  const apiId = row.apiId || ids.value;
+  proxy.$modal.confirm('是否确认复制接口"' + row.apiName + '"?').then(function () {
+    loading.value = true;
+    return copyApiById(apiId);
+  }).then(response => {
+    loading.value = false;
+    proxy.$modal.msgSuccess("复制成功");
+    getList();
+  }).catch(error => {
+    loading.value = false;
+    console.error("复制接口失败", error);
+  });
+}
 
 /** 删除按钮操作 */
 function handleDelete(row) {

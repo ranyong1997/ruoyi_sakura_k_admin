@@ -88,7 +88,7 @@
           </el-tooltip>
           <el-tooltip content="复制" placement="top">
             <el-button link type="primary" icon="CopyDocument" @click="handleCopy(scope.row)"
-                       v-hasPermi="['auto:project:edit']"></el-button>
+                       v-hasPermi="['auto:project:copy']"></el-button>
           </el-tooltip>
           <el-tooltip content="删除" placement="top">
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
