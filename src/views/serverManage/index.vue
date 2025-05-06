@@ -80,7 +80,7 @@
       <el-table-column label="服务器名称" align="center" prop="sshName" :show-overflow-tooltip="true"/>
       <el-table-column label="服务器地址" align="center" prop="sshHost" :show-overflow-tooltip="true"/>
       <el-table-column label="服务器用户名" align="center" prop="sshUsername" :show-overflow-tooltip="true"/>
-      <el-table-column label="服务器端口" align="center" prop="sshPort"  :show-overflow-tooltip="true"/>
+      <el-table-column label="服务器端口" align="center" prop="sshPort" :show-overflow-tooltip="true"/>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
       <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
                        :formatter="(row) => parseTime(row.updateTime)"
@@ -121,37 +121,42 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="服务器名称" prop="sshName">
-              <el-input v-model="form.sshName" placeholder="请输入服务器名称" maxlength="20" show-word-limit
+              <el-input v-model="form.sshName" placeholder="请输入服务器名称" @input="handleFormChange" maxlength="20"
+                        show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="服务器地址" prop="sshHost">
-              <el-input v-model="form.sshHost" placeholder="请输入服务器地址" maxlength="128" show-word-limit
+              <el-input v-model="form.sshHost" placeholder="请输入服务器地址" @input="handleFormChange" maxlength="128"
+                        show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="服务器用户名" prop="sshUsername">
-              <el-input v-model="form.sshUsername" placeholder="请输入服务器用户名" maxlength="128" show-word-limit
+              <el-input v-model="form.sshUsername" placeholder="请输入服务器用户名" @input="handleFormChange"
+                        maxlength="128" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="服务器密码" prop="sshPassword">
-              <el-input v-model="form.sshPassword" placeholder="请输入服务器密码" maxlength="128" show-word-limit
+              <el-input v-model="form.sshPassword" placeholder="请输入服务器密码" @input="handleFormChange"
+                        maxlength="128" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="服务器端口" prop="sshPort">
-              <el-input v-model="form.sshPort" placeholder="请输入服务器端口"  show-word-limit
+              <el-input v-model="form.sshPort" placeholder="请输入服务器端口" @input="handleFormChange" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="备注" prop="remark">
-              <el-input v-model="form.remark" placeholder="请输入备注" maxlength="100" show-word-limit
+              <el-input v-model="form.remark" placeholder="请输入备注" @input="handleFormChange" maxlength="100"
+                        show-word-limit
                         type="textarea"/>
             </el-form-item>
           </el-col>
@@ -160,7 +165,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="warning" @click="testSsh">测试连接</el-button>
-          <el-button type="primary" @click="submitForm">确 定</el-button>
+          <el-button type="primary" @click="submitForm" :disabled="!isFormChanged">确 定</el-button>
           <el-button @click="cancel">取 消</el-button>
         </div>
       </template>
@@ -181,6 +186,8 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+const originalForm = ref({}); // 用于存储原始表单数据
+const isFormChanged = ref(false); // 跟踪表单是否被修改
 
 const data = reactive({
   form: {},
@@ -202,6 +209,16 @@ const data = reactive({
     sshHost: [{required: true, message: "服务器地址不能为空", trigger: "blur"}, {
       max: 128,
       message: "服务器地址不能超过128个字符",
+      trigger: "blur"
+    }],
+    sshUsername: [{required: true, message: "服务器用户名不能为空", trigger: "blur"}, {
+      max: 128,
+      message: "服务器用户名不能超过128个字符",
+      trigger: "blur"
+    }],
+    sshPassword: [{required: true, message: "服务器密码不能为空", trigger: "blur"}, {
+      max: 128,
+      message: "服务器密码不能超过128个字符",
       trigger: "blur"
     }],
     sshPort: [{required: true, message: "服务器端口不能为空", trigger: "blur"}]
@@ -273,10 +290,30 @@ function handleUpdate(row) {
   getSshById(sshId).then(response => {
     form.value = response.data;
     form.value.sshPassword = "******";
+    // 保存原始表单数据的深拷贝
+    originalForm.value = JSON.parse(JSON.stringify(form.value));
+    isFormChanged.value = false; // 重置修改状态
     open.value = true;
     title.value = "修改服务器";
   });
 }
+
+// 添加表单输入事件处理函数，可以绑定到每个表单项的@input或@change事件
+function handleFormChange() {
+  checkFormChanged();
+}
+
+function checkFormChanged() {
+  if (originalForm.value && Object.keys(originalForm.value).length) {
+    isFormChanged.value = !isObjectsEqual(form.value, originalForm.value);
+  }
+}
+
+// 辅助函数：比较两个对象是否相等
+function isObjectsEqual(obj1, obj2) {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
+
 /** 复制按钮操作*/
 function handleCopy(row) {
   reset();
@@ -296,6 +333,11 @@ function handleCopy(row) {
 
 /** 提交按钮 */
 function submitForm() {
+  checkFormChanged();
+  if (!isFormChanged.value) {
+    // 如果表单没有变化，可以直接返回或者提示用户
+    return;
+  }
   proxy.$refs["sshRef"].validate(valid => {
     if (valid) {
       if (form.value.sshId !== undefined) {
