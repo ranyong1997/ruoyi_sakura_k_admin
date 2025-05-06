@@ -188,7 +188,7 @@ const total = ref(0);
 const title = ref("");
 const originalForm = ref({}); // 用于存储原始表单数据
 const isFormChanged = ref(false); // 跟踪表单是否被修改
-
+const isAdd = ref(false); // 是否是新增操作
 const data = reactive({
   form: {},
   queryParams: {
@@ -281,11 +281,18 @@ function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加服务器";
+  isAdd.value = true; // 标记为新增操作
+  // 保存初始状态
+  originalForm.value = JSON.parse(JSON.stringify(form.value));
+
+  // 对于新增操作，我们初始化 isFormChanged 为 false
+  isFormChanged.value = false;
 }
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
+  isAdd.value = false; // 标记为编辑操作
   const sshId = row.sshId || ids.value;
   getSshById(sshId).then(response => {
     form.value = response.data;
@@ -300,7 +307,22 @@ function handleUpdate(row) {
 
 // 添加表单输入事件处理函数，可以绑定到每个表单项的@input或@change事件
 function handleFormChange() {
-  checkFormChanged();
+  if (isAdd.value) {
+    // 对于新增操作，只要表单有值就允许提交
+    isFormChanged.value = hasFormValues();
+  } else {
+    // 对于编辑操作，比较表单是否有变化
+    checkFormChanged();
+  }
+}
+
+// 检查表单是否有非空值
+function hasFormValues() {
+  // 检查核心字段是否有值
+  return !!form.value.sshName ||
+      !!form.value.sshHost ||
+      !!form.value.sshUsername ||
+      !!form.value.sshPassword;
 }
 
 function checkFormChanged() {
