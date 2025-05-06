@@ -99,12 +99,14 @@
     />
 
     <!-- 添加或修改数据源对话框 -->
+
     <el-dialog :title="title" v-model="open" width="600px" append-to-body>
       <el-form ref="DataSourceRef" :model="form" :rules="rules" label-width="120px">
         <el-row>
           <el-col :span="24">
             <el-form-item label="数据源名称" prop="datasourceName">
-              <el-input v-model="form.datasourceName" placeholder="请输入数据源名称" maxlength="20" show-word-limit
+              <el-input v-model="form.datasourceName" placeholder="请输入数据源名称" @input="handleFormChange"
+                        maxlength="20" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
@@ -115,6 +117,7 @@
                   clearable
                   filterable
                   placeholder="请选择数据源类型"
+                  @change="handleFormChange"
               >
                 <el-option
                     v-for="item in select_bot"
@@ -127,48 +130,51 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="数据源地址" prop="datasourceHost">
-              <el-input v-model="form.datasourceHost" placeholder="请输入数据源地址" maxlength="255" show-word-limit
+              <el-input v-model="form.datasourceHost" placeholder="请输入数据源地址" @input="handleFormChange"
+                        maxlength="255" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="数据源端口" prop="datasourcePort">
-              <el-input v-model="form.datasourcePort" placeholder="请输入数据源端口" maxlength="10" show-word-limit
+              <el-input v-model="form.datasourcePort" placeholder="请输入数据源端口" @input="handleFormChange"
+                        maxlength="10" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="数据源用户名" prop="datasourceUser">
-              <el-input v-model="form.datasourceUser" placeholder="请输入数据源用户名" maxlength="64" show-word-limit
+              <el-input v-model="form.datasourceUser" placeholder="请输入数据源用户名" @input="handleFormChange"
+                        maxlength="64" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="数据源密码" prop="datasourcePwd" v-if="form.datasourceId==null" :rules="[
-              {
-                required: true,
-                message: '数据源密码不能为空',
-                trigger: 'blur',
-              },
-               {
-                max: 255,
-                message: '数据源密码不能超过255个字符',
-                trigger: 'blur',
-              }
-            ]">
-              <el-input v-model="form.datasourcePwd" placeholder="请输入数据源密码" maxlength="255" show-word-limit
+          {
+            required: true,
+            message: '数据源密码不能为空',
+            trigger: 'blur',
+          },
+          {
+            max: 255,
+            message: '数据源密码不能超过255个字符',
+            trigger: 'blur',
+          }
+        ]">
+              <el-input v-model="form.datasourcePwd" placeholder="请输入数据源密码" @input="handleFormChange"
+                        maxlength="255" show-word-limit
                         clearable/>
             </el-form-item>
             <el-form-item label="数据源密码" prop="datasourcePwd" v-else>
               <el-input v-model="form.datasourcePwd" placeholder="请输入数据源密码" maxlength="255" show-word-limit
-                        clearable @change="changepwd"/>
+                        clearable @change="changepwd" @input="handleFormChange"/>
             </el-form-item>
-
           </el-col>
           <el-col :span="24">
             <el-form-item label="备注" prop="remark">
               <el-input v-model="form.remark" placeholder="请输入备注" maxlength="100" show-word-limit
-                        type="textarea"/>
+                        type="textarea" @input="handleFormChange"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -176,7 +182,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="warning" @click="testDataSource">测试连接</el-button>
-          <el-button type="primary" @click="submitForm">确 定</el-button>
+          <el-button type="primary" @click="submitForm" :disabled="!isFormChanged">确 定</el-button>
           <el-button @click="cancel">取 消</el-button>
         </div>
       </template>
@@ -211,6 +217,8 @@ const select_bot = [
     label: 'Mysql',
   }
 ]
+const originalForm = ref({}); // 用于存储原始表单数据
+const isFormChanged = ref(false); // 跟踪表单是否被修改
 const expression = ref("");
 
 
@@ -246,6 +254,11 @@ const data = reactive({
     datasourceUser: [{required: true, message: "数据源用户名不能为空", trigger: "blur"}, {
       max: 64,
       message: "数据源用户名不能超过64个字符",
+      trigger: "blur"
+    }],
+    datasourcePwd: [{required: true, message: "数据源密码不能为空", trigger: "blur"}, {
+      max: 255,
+      message: "数据源密码不能超过255个字符",
       trigger: "blur"
     }],
     datasourceType: [{required: true, message: "请选择数据源类型", trigger: "blur"}]
@@ -323,14 +336,40 @@ function handleUpdate(row) {
   getDatasourceById(datasourceId).then(response => {
     form.value = response.data;
     form.value.datasourcePwd = "******";
+    // 保存原始表单数据的深拷贝
+    originalForm.value = JSON.parse(JSON.stringify(form.value));
+    isFormChanged.value = false; // 重置修改状态
     changePwd.value = false;
     open.value = true;
     title.value = "修改数据源";
   });
 }
 
+// 添加表单输入事件处理函数，可以绑定到每个表单项的@input或@change事件
+function handleFormChange() {
+  checkFormChanged();
+}
+
+// 检查表单是否有变化
+function checkFormChanged() {
+  if (originalForm.value && Object.keys(originalForm.value).length) {
+    isFormChanged.value = !isObjectsEqual(form.value, originalForm.value);
+  }
+}
+
+// 辅助函数：比较两个对象是否相等
+function isObjectsEqual(obj1, obj2) {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
+
+
 /** 提交按钮 */
 function submitForm() {
+  checkFormChanged();
+  if (!isFormChanged.value) {
+    // 如果表单没有变化，可以直接返回或者提示用户
+    return;
+  }
   proxy.$refs["DataSourceRef"].validate(valid => {
     if (valid) {
       let formdata = {...form.value};
