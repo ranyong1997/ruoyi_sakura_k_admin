@@ -55,3 +55,12 @@ export function copySshById(sshId) {
         method: 'post'
     })
 }
+
+// 根据 ID 测试连接机器人
+export function testSshById(sshId) {
+    return request({
+        url: baseurl + '/' + sshId,
+        method: 'post',
+        data: sshId
+    })
+}

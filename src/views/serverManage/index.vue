@@ -159,6 +159,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
+          <el-button type="warning" @click="testSsh">测试连接</el-button>
           <el-button type="primary" @click="submitForm">确 定</el-button>
           <el-button @click="cancel">取 消</el-button>
         </div>
@@ -168,7 +169,7 @@
 </template>
 
 <script setup name="serverManage">
-import {addSsh, delSsh, getSshById, listSsh, updateSsh,copySshById} from "@/api/ssh/ssh";
+import {addSsh, delSsh, getSshById, listSsh, updateSsh, copySshById, testSshById} from "@/api/ssh/ssh";
 
 const {proxy} = getCurrentInstance();
 const sshList = ref([]);
@@ -313,6 +314,32 @@ function submitForm() {
     }
   });
 }
+
+/** 测试连接按钮 */
+const testSsh = () => {
+  proxy.$refs["sshRef"].validate(valid => {
+    if (valid) {
+      if (form.value.sshId) {
+        proxy.$modal.msgSuccess("正在测试连接...");
+        testSshById(form.value.sshId).then(response => {
+          if (response.data && response.data.is_success) {
+            // 连接成功
+            proxy.$modal.msgSuccess(response.data.message || "连接测试成功");
+          } else {
+            // 连接失败
+            proxy.$modal.msgError(response.data.message || "连接测试失败");
+          }
+        }).catch(error => {
+          proxy.$modal.msgError("测试连接请求失败：" + error.message);
+        });
+      } else {
+        proxy.$modal.msgWarning("请先保存服务器配置再进行测试");
+      }
+    } else {
+      proxy.$modal.msgWarning("请填写完整的服务器信息配置");
+    }
+  });
+};
 
 /** 删除按钮操作 */
 function handleDelete(row) {

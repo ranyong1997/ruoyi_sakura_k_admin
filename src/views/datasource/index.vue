@@ -175,7 +175,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="warning" @click="testRobot">测试连接</el-button>
+          <el-button type="warning" @click="testDataSource">测试连接</el-button>
           <el-button type="primary" @click="submitForm">确 定</el-button>
           <el-button @click="cancel">取 消</el-button>
         </div>
@@ -369,7 +369,7 @@ function handleDelete(row) {
 }
 
 /** 测试连接按钮 */
-const testRobot = () => {
+const testDataSource = () => {
   proxy.$refs["DataSourceRef"].validate(valid => {
     if (valid) {
       if (form.value.datasourceId) {
