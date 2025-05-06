@@ -79,7 +79,7 @@
       <el-table-column label="服务器编号" width="center" align="center" prop="sshId"/>
       <el-table-column label="服务器名称" align="center" prop="sshName" :show-overflow-tooltip="true"/>
       <el-table-column label="服务器地址" align="center" prop="sshHost" :show-overflow-tooltip="true"/>
-      <el-table-column label="服务器用户名" align="center" prop="sshName" :show-overflow-tooltip="true"/>
+      <el-table-column label="服务器用户名" align="center" prop="sshUsername" :show-overflow-tooltip="true"/>
       <el-table-column label="服务器端口" align="center" prop="sshPort"  :show-overflow-tooltip="true"/>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
       <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
@@ -121,7 +121,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="服务器名称" prop="sshName">
-              <el-input v-model="form.sshName" placeholder="请输入服务器名称" maxlength="10" show-word-limit
+              <el-input v-model="form.sshName" placeholder="请输入服务器名称" maxlength="20" show-word-limit
                         clearable/>
             </el-form-item>
           </el-col>
@@ -194,8 +194,8 @@ const data = reactive({
   },
   rules: {
     sshName: [{required: true, message: "服务器名称不能为空", trigger: "blur"}, {
-      max: 10,
-      message: "服务器名称不能超过10个字符",
+      max: 20,
+      message: "服务器名称不能超过20个字符",
       trigger: "blur"
     }],
     sshHost: [{required: true, message: "服务器地址不能为空", trigger: "blur"}, {
@@ -271,6 +271,7 @@ function handleUpdate(row) {
   const sshId = row.sshId || ids.value;
   getSshById(sshId).then(response => {
     form.value = response.data;
+    form.value.sshPassword = "******";
     open.value = true;
     title.value = "修改服务器";
   });
