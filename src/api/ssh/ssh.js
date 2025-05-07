@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const baseurl = '/servermanage/'
+const baseurl = '/ssh/'
 
 // 查询服务器列表
 export function listSsh(query) {
