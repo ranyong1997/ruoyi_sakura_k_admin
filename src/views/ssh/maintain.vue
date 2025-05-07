@@ -216,21 +216,10 @@ function handleShutdown() {
 }
 
 
-function handleUpdate() {
-  if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  ExecuteCommand({ sshId: selectedServer.value.sshId, command: 'apt update && apt upgrade -y || yum update -y' }).then(res => {
-    addLog({ status: '成功', action: '更新系统', output: res.data })
-    ElMessage.success('更新命令已发送')
-  }).catch(err => {
-    addLog({ status: '失败', action: '更新系统', output: err.message })
-    ElMessage.error('更新失败')
-  })
-}
-
 
 function handleExecuteScript() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!scriptContent.value.trim()) return ElMessage.warning('请输入脚本内容')
+  if (!scriptContent.value.trim()) return ElMessage.warn('请输入脚本内容')
   ExecuteScript({ sshId: selectedServer.value.sshId, script: scriptContent.value }).then(res => {
     outputJson.value = res
     ElMessage.success('脚本执行成功')
@@ -244,7 +233,7 @@ function handleExecuteScript() {
 
 function handleExecuteCommand() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!commandContent.value.trim()) return ElMessage.warning('请输入命令内容')
+  if (!commandContent.value.trim()) return ElMessage.warn('请输入命令内容')
   ExecuteCommand({ ssh_id: selectedServer.value.sshId, command: commandContent.value, timeout: 60 }).then(res => {
     outputJson.value = res
     ElMessage.success('命令执行成功')
@@ -269,7 +258,7 @@ function clearLogs() {
 // 文件管理
 function handleUploadFile() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!localFilePath.value || !remoteFilePath.value) return ElMessage.warning('请填写本地和远程路径')
+  if (!localFilePath.value || !remoteFilePath.value) return ElMessage.warn('请填写本地和远程路径')
   UploadFile({ ssh_id: selectedServer.value.sshId, localPath: localFilePath.value, remote_path: remoteFilePath.value }).then(res => {
     outputJson.value = res
     ElMessage.success('上传成功')
@@ -280,7 +269,7 @@ function handleUploadFile() {
 }
 function handleDownloadFile() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!remoteFilePath.value || !localFilePath.value) return ElMessage.warning('请填写本地和远程路径')
+  if (!remoteFilePath.value || !localFilePath.value) return ElMessage.warn('请填写本地和远程路径')
   DownloadFile({ ssh_id: selectedServer.value.sshId, remote_path: remoteFilePath.value, localPath: localFilePath.value }).then(res => {
     outputJson.value = res
     ElMessage.success('下载成功')
@@ -291,7 +280,7 @@ function handleDownloadFile() {
 }
 function handleRemoveFile() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!remoteFilePath.value) return ElMessage.warning('请填写远程路径')
+  if (!remoteFilePath.value) return ElMessage.warn('请填写远程路径')
   RemoveFile({ ssh_id: selectedServer.value.sshId, remote_path: remoteFilePath.value }).then(res => {
     outputJson.value = res
     ElMessage.success('删除成功')
@@ -303,7 +292,7 @@ function handleRemoveFile() {
 // 文本读写
 function handleReadText() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!textFilePath.value) return ElMessage.warning('请填写远程文件路径')
+  if (!textFilePath.value) return ElMessage.warn('请填写远程文件路径')
   ReadText({ ssh_id: selectedServer.value.sshId, remote_path: textFilePath.value }).then(res => {
     textContent.value = res.data?.output || ''
     outputJson.value = res
@@ -315,7 +304,7 @@ function handleReadText() {
 }
 function handleWriteText() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!textFilePath.value) return ElMessage.warning('请填写远程文件路径')
+  if (!textFilePath.value) return ElMessage.warn('请填写远程文件路径')
   WriteText({ ssh_id: selectedServer.value.sshId, remote_path: textFilePath.value, content: textContent.value }).then(res => {
     outputJson.value = res
     ElMessage.success('写入成功')
@@ -327,7 +316,7 @@ function handleWriteText() {
 // 目录管理
 function handleListDirectory() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!dirPath.value) return ElMessage.warning('请填写目录路径')
+  if (!dirPath.value) return ElMessage.warn('请填写目录路径')
   ListDirectory({ ssh_id: selectedServer.value.sshId, remote_path: dirPath.value }).then(res => {
     outputJson.value = res
     ElMessage.success('列出成功')
@@ -338,7 +327,7 @@ function handleListDirectory() {
 }
 function handleMakeDirectory() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!dirPath.value) return ElMessage.warning('请填写目录路径')
+  if (!dirPath.value) return ElMessage.warn('请填写目录路径')
   MakeDirectory({ ssh_id: selectedServer.value.sshId, remote_path: dirPath.value }).then(res => {
     outputJson.value = res
     ElMessage.success('创建成功')
@@ -349,7 +338,7 @@ function handleMakeDirectory() {
 }
 function handleRemoveDirectory() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!dirPath.value) return ElMessage.warning('请填写目录路径')
+  if (!dirPath.value) return ElMessage.warn('请填写目录路径')
   RemoveDirectory({ ssh_id: selectedServer.value.sshId, remote_path: dirPath.value }).then(res => {
     outputJson.value = res
     ElMessage.success('删除成功')
