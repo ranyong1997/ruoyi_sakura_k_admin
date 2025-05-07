@@ -168,18 +168,18 @@
           :show-overflow-tooltip="true"
       />
       <el-table-column
+          label="更新人"
+          width="center"
+          align="center"
+          prop="updateBy"
+          :show-overflow-tooltip="true"
+      />
+      <el-table-column
           label="更新时间"
           width="180"
           align="center"
           prop="updateTime"
           :formatter="(row) => parseTime(row.updateTime)"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="更新人"
-          width="center"
-          align="center"
-          prop="updateBy"
           :show-overflow-tooltip="true"
       />
       <el-table-column

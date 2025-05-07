@@ -69,13 +69,13 @@
       <el-table-column label="数据源类型" width="center" align="center" prop="datasourceType"/>
       <el-table-column label="数据源用户名" width="center" align="center" prop="datasourceUser"/>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
+                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
+      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
       <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
                        :formatter="(row) => parseTime(row.updateTime)"
                        :show-overflow-tooltip="true"/>
-      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
-                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-tooltip content="修改" placement="top">
