@@ -174,7 +174,15 @@
 </template>
 
 <script setup name="serverManage">
-import {addSsh, delSsh, getSshById, listSsh, updateSsh, copySshById, testSshById} from "@/api/ssh/ssh";
+import {
+  addSsh,
+  delSsh,
+  getSshById,
+  listSsh,
+  updateSsh,
+  copySshById,
+  testSshById
+} from "@/api/servermanage/servermanage";
 
 const {proxy} = getCurrentInstance();
 const sshList = ref([]);
