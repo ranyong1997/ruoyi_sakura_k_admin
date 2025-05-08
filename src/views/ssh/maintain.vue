@@ -230,7 +230,7 @@ function handleQuickCommand(command) {
 // 保留原有的文件操作函数
 function handleUploadFile() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!localFilePath.value || !remoteFilePath.value) return ElMessage.warn('请填写本地和远程路径')
+  if (!localFilePath.value || !remoteFilePath.value) return ElMessage.warning('请填写本地和远程路径')
   UploadFile({ ssh_id: selectedServer.value.sshId, localPath: localFilePath.value, remote_path: remoteFilePath.value }).then(res => {
     ElMessage.success('上传成功')
     addTerminalOutput(activeTab.value, { type: 'system', content: '文件上传成功' })
@@ -242,7 +242,7 @@ function handleUploadFile() {
 
 function handleDownloadFile() {
   if (!selectedServer.value) return ElMessage.error('请选择服务器')
-  if (!remoteFilePath.value || !localFilePath.value) return ElMessage.warn('请填写本地和远程路径')
+  if (!remoteFilePath.value || !localFilePath.value) return ElMessage.warning('请填写本地和远程路径')
   DownloadFile({ ssh_id: selectedServer.value.sshId, remote_path: remoteFilePath.value, localPath: localFilePath.value }).then(res => {
     ElMessage.success('下载成功')
     addTerminalOutput(activeTab.value, { type: 'system', content: '文件下载成功' })

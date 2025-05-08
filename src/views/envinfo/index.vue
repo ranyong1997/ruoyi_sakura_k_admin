@@ -167,11 +167,11 @@
         @pagination="getList"
     />
     <!-- 添加或修改接口对话框 -->
-    <el-drawer v-model="open" size="80%" :title="title" direction="rtl">
+    <el-drawer v-model="open" size="50%" :title="title" direction="rtl">
       <EditApi
           ref="editEnvRef"
           :formData="form"
-          @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"
+          @saveOrUpdateOrRefresh="handleSaveOrUpdateOrRefresh"
       >
       </EditApi>
     </el-drawer>
@@ -199,15 +199,14 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
-const expression = ref("");
 
 const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    envUrl: undefined,
     envName: undefined,
+    envUrl: undefined,
     envVariables: undefined,
     envHeaders: undefined,
     remark: undefined,
@@ -234,7 +233,7 @@ const data = reactive({
 
 const {queryParams, form} = toRefs(data);
 
-/** 查询接口列表 */
+/** 查询环境列表 */
 function getList() {
   loading.value = true;
   listEnv(queryParams.value).then((response) => {
@@ -251,7 +250,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['saveOrUpdateOrDebug'])
+const emit = defineEmits(['saveOrUpdateOrRefresh'])
 
 /** 表单重置 */
 function reset() {
@@ -329,7 +328,7 @@ function handleUpdate(row) {
 }
 
 // 处理子组件的保存/调试事件
-const handleSaveOrUpdateOrDebug = async (type, formData) => {
+const saveOrUpdateOrRefresh = async (type, formData) => {
   if (type === 'save') {
     try {
       getList();

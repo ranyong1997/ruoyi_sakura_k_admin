@@ -513,7 +513,7 @@ const saveOrUpdateOrDebug = async (handleType = 'save', externalData = null) => 
     } else if (handleType === 'debug') {
       // 验证表单
       if (!debugForm.runEnv) {
-        ElMessage.warn('请选择运行环境')
+        ElMessage.warning('请选择运行环境')
         return
       }
       // 执行调试逻辑

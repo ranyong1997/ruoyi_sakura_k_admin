@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-card>
       <div class="h100">
-        <EnvInfo ref="EnvRef" :formData="formData" @saveOrUpdateOrDebug="handleSaveOrUpdateOrDebug"/>
+        <EnvInfo ref="EnvRef" :formData="formData" @saveOrUpdateOrDebug="handleSaveOrUpdateOrRefresh"/>
         <div>
           <el-card>
             <template #header>
@@ -28,7 +28,7 @@
   </div>
 </template>
 
-<script setup name="EditApiInfo">
+<script setup name="EnvInfo">
 import {defineProps, ref} from 'vue'
 import EnvInfo from './EnvInfo.vue'
 import EnvRequestBody from './EnvRequestBody.vue'
@@ -40,12 +40,12 @@ const props = defineProps({
     default: () => ({})
   }
 })
-const emit = defineEmits(['saveOrUpdateOrDebug'])
+const emit = defineEmits(['saveOrUpdateOrRefresh'])
 const EnvRef = ref()
 const EnvRequestHeadersRef = ref()
 const EnvRequestBodyRef = ref()
 
-const handleSaveOrUpdateOrDebug = (type) => {
+const handleSaveOrUpdateOrRefresh = (type) => {
   emit('saveOrUpdateOrDebug', type)
 }
 
