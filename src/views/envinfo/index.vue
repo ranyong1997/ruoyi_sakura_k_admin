@@ -108,18 +108,18 @@
           :show-overflow-tooltip="true"
       />
       <el-table-column
+          label="更新人"
+          width="center"
+          align="center"
+          prop="updateBy"
+          :show-overflow-tooltip="true"
+      />
+      <el-table-column
           label="更新时间"
           width="180"
           align="center"
           prop="updateTime"
           :formatter="(row) => parseTime(row.updateTime)"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
-          label="更新人"
-          width="center"
-          align="center"
-          prop="updateBy"
           :show-overflow-tooltip="true"
       />
       <el-table-column
@@ -143,8 +143,8 @@
                 link
                 type="primary"
                 icon="Connection"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['env:envInfo:edit']"
+                @click="handleCopy(scope.row)"
+                v-hasPermi="['env:envInfo:copy']"
             ></el-button>
           </el-tooltip>
           <el-tooltip content="删除" placement="top">
@@ -184,8 +184,10 @@ import {
   delEnv,
   getEnvById,
   listEnv,
+  copyEnvById
 } from "@/api/envinfo/envinfo";
 import EditApi from "./components/EditApi.vue";
+
 const {proxy} = getCurrentInstance();
 const editEnvRef = ref(null);
 const envList = ref([]);
@@ -337,6 +339,24 @@ const handleSaveOrUpdateOrDebug = async (type, formData) => {
   }
 };
 
+/** 复制按钮操作*/
+function handleCopy(row) {
+  reset();
+  const envId = row.envId || ids.value;
+  proxy.$modal.confirm('是否确认复制环境"' + row.envName + '"?').then(function () {
+    loading.value = true;
+    return copyEnvById(envId);
+  }).then(response => {
+    loading.value = false;
+    proxy.$modal.msgSuccess("复制成功");
+    getList();
+  }).catch(error => {
+    loading.value = false;
+    console.error("复制环境失败", error);
+  });
+}
+
+
 /** 删除按钮操作 */
 function handleDelete(row) {
   const envId = row.envId || ids.value;
@@ -356,14 +376,11 @@ function handleDelete(row) {
 
 /** 导出按钮操作 */
 function handleExport() {
-  proxy.download(
-      "",
-      {
-        ...queryParams.value,
-      },
-      `env_${new Date().getTime()}.xlsx`
-  );
+  proxy.download("/env/envInfo/export", {
+    ...queryParams.value,
+  }, `环境管理_${new Date().getTime()}.xlsx`);
 }
+
 
 getList();
 </script>
