@@ -2,22 +2,23 @@
   <div class="app-container">
     <el-card>
       <div class="h100">
-        <EnvInfo ref="EnvRef" :formData="formData" @saveOrUpdateOrDebug="handleSaveOrUpdateOrRefresh"/>
+        <EnvInfo ref="EnvRef" :formData="formData" @handleSaveOrUpdateOrRefresh="handleSaveOrUpdateOrRefresh"/>
         <div>
           <el-card>
-            <template #header>
-              <strong>Request</strong>
-            </template>
             <div style="min-height: 500px">
               <el-tabs style="overflow-y: auto">
-                <el-tab-pane name='EnvRequestBody'>
+                <el-tab-pane name='HTTPConfiguration'>
                   <template #label>
                     <strong>HTTP配置</strong>
-                    <span class="ui-badge-status-dot" v-show="getDataLength('body')"></span>
                   </template>
                   <div class="case-tabs">
-                    <EnvRequestBody ref="ApiRequestBodyRef" @updateContentType="updateContentType"/>
+                    <EnvBody ref="EnvBody" @updateContentType="updateContentType"/>
                   </div>
+                </el-tab-pane>
+                <el-tab-pane name='GenericConfiguration'>
+                  <template #label>
+                    <strong>通用配置</strong>
+                  </template>
                 </el-tab-pane>
               </el-tabs>
             </div>
@@ -28,11 +29,10 @@
   </div>
 </template>
 
-<script setup name="EnvInfo">
+<script setup name="Env">
 import {defineProps, ref} from 'vue'
 import EnvInfo from './EnvInfo.vue'
-import EnvRequestBody from './EnvRequestBody.vue'
-import ApiRequestHeaders from './EnvRequestHeaders.vue'
+import EnvBody from './EnvBody.vue'
 // 定义父组件传过来的值
 const props = defineProps({
   formData: {
@@ -42,8 +42,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['saveOrUpdateOrRefresh'])
 const EnvRef = ref()
-const EnvRequestHeadersRef = ref()
-const EnvRequestBodyRef = ref()
 
 const handleSaveOrUpdateOrRefresh = (type) => {
   emit('saveOrUpdateOrDebug', type)
@@ -55,17 +53,6 @@ const setData = (data) => {
 
 const getData = () => {
   return EnvRef.value?.getData()
-}
-
-const getDataLength = (ref) => {
-  switch (ref) {
-    case "body":
-      return EnvRequestBodyRef?.value.getDataLength()
-    case "header":
-      return EnvRequestHeadersRef?.value.getDataLength()
-    default:
-      return 0
-  }
 }
 
 defineExpose({

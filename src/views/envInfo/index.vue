@@ -168,25 +168,25 @@
     />
     <!-- 添加或修改接口对话框 -->
     <el-drawer v-model="open" size="50%" :title="title" direction="rtl">
-      <EditApi
+      <Env
           ref="editEnvRef"
           :formData="form"
           @saveOrUpdateOrRefresh="handleSaveOrUpdateOrRefresh"
       >
-      </EditApi>
+      </Env>
     </el-drawer>
   </div>
 </template>
 
-<script setup name="Api">
+<script setup name="envInfo">
 import {ref, getCurrentInstance, reactive, nextTick} from 'vue'
 import {
   delEnv,
   getEnvById,
   listEnv,
   copyEnvById
-} from "@/api/envinfo/envinfo";
-import EditApi from "./components/EditApi.vue";
+} from "@/api/envInfo/envInfo.js";
+import Env from "./components/Env.vue";
 
 const {proxy} = getCurrentInstance();
 const editEnvRef = ref(null);

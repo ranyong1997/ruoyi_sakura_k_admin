@@ -1,31 +1,29 @@
 <template>
-  <div class="api-case el-card">
-    <el-row>
-      <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
-        <div class="api-case__method" style="padding-left: 5px">
-          <el-form-item label="环境名称" prop="envName">
-            <el-input v-model.trim="state.form.envName"
-                      style="width: 100%;"
-                      clearable
-                      placeholder="请输入环境名称"/>
-          </el-form-item>
-        </div>
-      </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
-        <div class="api-case__operation" style="padding-left: 12px">
-          <el-button size="default" type="primary" @click="saveOrUpdateOrRefresh('save')" class="title-button">保存
-          </el-button>
-          <el-button size="default" type="success" @click="handleDebug('refresh')">刷新</el-button>
-        </div>
-      </el-col>
-    </el-row>
-    <div class="api-case__detail">
+  <div>
+    <div>
       <el-form ref="formRef"
                :model="state.form"
                label-width="auto"
                label-position="right"
                :rules="state.rules">
         <el-row :gutter="24">
+          <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
+            <el-form-item label="环境名称" prop="envName">
+              <el-input
+                  size="default"
+                  v-model="state.form.envName"
+                  placeholder="请输入环境名称"
+                  class="input-with-select"
+              >
+              </el-input>
+            </el-form-item>
+          </el-col>
+                    <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
+            <div style="padding-left: 12px">
+              <el-button size="default" type="primary" @click="saveOrUpdateOrRefresh('save')">保存</el-button>
+              <el-button size="default" type="success" @click="saveOrUpdateOrRefresh('refresh')">刷新</el-button>
+            </div>
+          </el-col>
           <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
             <el-form-item label="环境地址" prop="envUrl">
               <el-input
@@ -36,7 +34,6 @@
               >
               </el-input>
             </el-form-item>
-
           </el-col>
           <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
             <el-form-item label="备注" prop="">
@@ -76,10 +73,10 @@
   </div>
 </template>
 
-<script setup name="envInfo">
+<script setup name="EnvInfo">
 import {reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
-import {addEnv, updateEnv, listEnv} from "@/api/envinfo/envinfo";
+import {addEnv, updateEnv, listEnv} from "@/api/envInfo/envInfo";
 import {formatDate} from '@/components/monaco/formatTime';
 
 // emit
@@ -143,9 +140,9 @@ const getData = () => {
   return state.form
 }
 
-
-const handleDebug = () => {
-  state.showEnvPage = true
+// 刷新
+const handleRefresh = () => {
+  console.log("这是一个根据环境Id重新去请求赋值")
 }
 
 const tableData = ref({
@@ -155,15 +152,15 @@ const tableData = ref({
   updateTime: '',
 })
 
-// 保存，或调试用例
+// 保存，或刷新
 const saveOrUpdateOrRefresh = async (handleType = 'save') => {
   // 表单验证
   if (!state.form.envUrl) {
-    ElMessage.warning('请填写请求环境地址!');
+    ElMessage.warning('请填写请求环境地址');
     return
   }
   if (!state.form.envName) {
-    ElMessage.warning('请填写请求环境名称!');
+    ElMessage.warning('请填写请求环境名称');
     return
   }
   try {

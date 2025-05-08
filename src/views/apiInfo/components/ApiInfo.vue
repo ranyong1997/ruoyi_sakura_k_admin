@@ -173,7 +173,7 @@ import {ElMessage} from "element-plus";
 import {listProject} from "@/api/project/project";
 import {addApi, testApiById, updateApi} from "@/api/apiInfo/apiInfo";
 import {getMethodColor} from "@/utils/case"
-import {listEnv} from "@/api/envinfo/envinfo"
+import {listEnv} from "@/api/envInfo/envInfo.js"
 import {formatDate} from '@/components/monaco/formatTime';
 import ReportDialog from './ReportDialog.vue';
 
