@@ -3,22 +3,19 @@
     <el-row>
       <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
         <div class="api-case__method" style="padding-left: 5px">
-          <el-form-item label="环境地址" prop="envUrl">
-            <el-input
-                size="default"
-                v-model="state.form.envUrl"
-                placeholder="请输入环境地址"
-                class="input-with-select"
-            >
-            </el-input>
+          <el-form-item label="环境名称" prop="envName">
+            <el-input v-model.trim="state.form.envName"
+                      style="width: 100%;"
+                      clearable
+                      placeholder="请输入环境名称"/>
           </el-form-item>
         </div>
       </el-col>
       <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="mb20">
         <div class="api-case__operation" style="padding-left: 12px">
-          <el-button size="default" type="primary" @click="saveOrUpdateOrDebug('save')" class="title-button">保存
+          <el-button size="default" type="primary" @click="saveOrUpdateOrRefresh('save')" class="title-button">保存
           </el-button>
-          <el-button size="default" type="success" @click="handleDebug">刷新</el-button>
+          <el-button size="default" type="success" @click="handleDebug('refresh')">刷新</el-button>
         </div>
       </el-col>
     </el-row>
@@ -30,20 +27,24 @@
                :rules="state.rules">
         <el-row :gutter="24">
           <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
-            <el-form-item label="环境名称" prop="envName">
-              <el-input v-model.trim="state.form.envName"
-                        style="width: 100%;"
-                        clearable
-                        placeholder="请输入环境名称"/>
+            <el-form-item label="环境地址" prop="envUrl">
+              <el-input
+                  size="default"
+                  v-model="state.form.envUrl"
+                  placeholder="请输入环境地址"
+                  class="input-with-select"
+              >
+              </el-input>
             </el-form-item>
+
           </el-col>
           <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
-            <el-form-item label="描述" prop="">
+            <el-form-item label="备注" prop="">
               <el-input size="default"
                         type="textarea"
                         v-model.trim="state.form.remark"
                         style="width: 100%;"
-                        placeholder="请输入环境描述"/>
+                        placeholder="请输入环境备注"/>
               <el-col :xs="15" :sm="15" :md="15" :lg="15" :xl="15" class="mb20">
                 <el-form-item label="创建用户" prop="createBy">
                   <strong>{{ tableData.createBy }}</strong>
@@ -76,25 +77,22 @@
 </template>
 
 <script setup name="envInfo">
-import {nextTick, reactive, ref, watch} from "vue";
+import {reactive, ref, watch} from "vue";
 import {ElMessage} from "element-plus";
 import {addEnv, updateEnv, listEnv} from "@/api/envinfo/envinfo";
-import {getMethodColor} from "@/utils/case"
 import {formatDate} from '@/components/monaco/formatTime';
 
 // emit
-const emit = defineEmits(["saveOrUpdateOrDebug"])
+const emit = defineEmits(["saveOrUpdateOrRefresh"])
 // 自定义变量
 const formRef = ref()
-const methodRef = ref()
 const createForm = () => {
   return {
-    envName: '',
-    envUrl: '',
-    envId: null,
+    envName: undefined,
+    envUrl: undefined,
     envHeaders: {},
     envVariables: {},
-    remark: ""
+    remark: undefined
   }
 }
 const state = reactive({
@@ -158,7 +156,7 @@ const tableData = ref({
 })
 
 // 保存，或调试用例
-const saveOrUpdateOrDebug = async (handleType = 'save') => {
+const saveOrUpdateOrRefresh = async (handleType = 'save') => {
   // 表单验证
   if (!state.form.envUrl) {
     ElMessage.warning('请填写请求环境地址!');
@@ -186,12 +184,12 @@ const saveOrUpdateOrDebug = async (handleType = 'save') => {
       }
       if (response.code === 200) { // 根据你的接口返回码判断
         ElMessage.success(msg);
-        emit('saveOrUpdateOrDebug', 'save');
+        emit('saveOrUpdateOrRefresh', 'save');
       } else {
         ElMessage.error(response.message || '保存失败');
       }
-    } else if (handleType === 'debug') {
-      emit('saveOrUpdateOrDebug', 'debug');
+    } else if (handleType === 'refresh') {
+      emit('saveOrUpdateOrRefresh', 'refresh');
       state.showEnvPage = false;
     }
   } catch (error) {
