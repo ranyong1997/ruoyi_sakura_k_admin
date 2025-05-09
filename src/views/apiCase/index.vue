@@ -161,7 +161,7 @@ import {
   updateApiCase,
   TestCase_Batch
 } from "@/api/apiCase/apiCase";
-import {listEnv} from "@/api/envinfo/envinfo";
+import {listEnv} from "@/api/envInfo/envInfo.js";
 
 const {proxy} = getCurrentInstance();
 const testcaseList = ref([]);

@@ -74,13 +74,13 @@
       </el-table-column>
       <el-table-column label="通知模板" align="center" prop="robotTemplate" :show-overflow-tooltip="true"/>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
+                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
+      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
       <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
                        :formatter="(row) => parseTime(row.updateTime)"
                        :show-overflow-tooltip="true"/>
-      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
-                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-tooltip content="修改" placement="top">

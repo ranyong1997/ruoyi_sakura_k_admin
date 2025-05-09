@@ -45,3 +45,11 @@ export function getEnvById(envId) {
         params: envId
     })
 }
+
+// 根据 ID 复制服务器
+export function copyEnvById(envId) {
+    return request({
+        url: baseurl + '/copy/' + envId,
+        method: 'post'
+    })
+}

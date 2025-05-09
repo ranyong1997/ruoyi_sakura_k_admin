@@ -1,9 +1,11 @@
 import request from '@/utils/request'
 
+const baseurl = '/auto/project'
+
 // 获取项目列表
 export function listProject(query) {
     return request({
-        url: '/auto/project/list',
+        url: baseurl + '/list',
         method: 'get',
         params: query
     })
@@ -12,7 +14,7 @@ export function listProject(query) {
 // 新增项目
 export function addProject(data) {
     return request({
-        url: '/auto/project',
+        url: baseurl,
         method: 'post',
         data: data
     })
@@ -21,7 +23,7 @@ export function addProject(data) {
 // 修改项目
 export function updateProject(data) {
     return request({
-        url: '/auto/project',
+        url: baseurl,
         method: 'put',
         data: data
     })
@@ -30,7 +32,7 @@ export function updateProject(data) {
 // 删除项目
 export function delProject(projectId) {
     return request({
-        url: '/auto/project/' + projectId,
+        url: baseurl + '/' + projectId,
         method: 'delete'
     })
 }
@@ -38,8 +40,16 @@ export function delProject(projectId) {
 // 根据 ID 获取项目详情
 export function getProjectById(projectId) {
     return request({
-        url: '/auto/project/' + projectId,
+        url: baseurl + '/' + projectId,
         method: 'get',
         params: projectId
+    })
+}
+
+// 根据 ID 复制项目
+export function copyProjectById(projectId) {
+    return request({
+        url: baseurl + '/copy/' + projectId,
+        method: 'post'
     })
 }

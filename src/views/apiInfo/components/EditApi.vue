@@ -16,7 +16,11 @@
                     <span class="ui-badge-circle" v-show="paramsData.length">{{ paramsData.length }}</span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestParams ref="ApiRequestParamsRef" v-model:params="paramsData" />
+                    <ApiRequestParams 
+                      ref="ApiRequestParamsRef" 
+                      :params="paramsData"
+                      @update:params="updateParams" 
+                    />
                   </div>
                 </el-tab-pane>
                 <el-tab-pane name="body">
@@ -25,7 +29,12 @@
                     <span class="ui-badge-status-dot" v-show="bodyData"></span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestBody ref="ApiRequestBodyRef" v-model:body="bodyData" @updateContentType="updateContentType"/>
+                    <ApiRequestBody 
+                      ref="ApiRequestBodyRef" 
+                      :body="bodyData"
+                      @update:body="updateBody"
+                      @updateContentType="updateContentType"
+                    />
                   </div>
                 </el-tab-pane>
                 <el-tab-pane name="headers">
@@ -34,7 +43,11 @@
                     <span class="ui-badge-circle" v-show="headersData.length">{{ headersData.length }}</span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestHeaders ref="ApiRequestHeadersRef" v-model:headers="headersData" />
+                    <ApiRequestHeaders 
+                      ref="ApiRequestHeadersRef" 
+                      :headers="headersData"
+                      @update:headers="updateHeaders" 
+                    />
                   </div>
                 </el-tab-pane>
                 <el-tab-pane name="cookies">
@@ -43,7 +56,11 @@
                     <span class="ui-badge-circle" v-show="cookiesData.length">{{ cookiesData.length }}</span>
                   </template>
                   <div class="case-tabs">
-                    <ApiRequestCookies ref="ApiRequestCookiesRef" v-model:cookies="cookiesData" />
+                    <ApiRequestCookies 
+                      ref="ApiRequestCookiesRef" 
+                      :cookies="cookiesData"
+                      @update:cookies="updateCookies" 
+                    />
                   </div>
                 </el-tab-pane>
               </el-tabs>
@@ -85,8 +102,28 @@ const headersData = ref([])
 const cookiesData = ref([])
 const bodyData = ref(null)
 
+// 更新函数
+const updateParams = (newParams) => {
+  paramsData.value = newParams
+}
+
+const updateHeaders = (newHeaders) => {
+  headersData.value = newHeaders
+}
+
+const updateCookies = (newCookies) => {
+  cookiesData.value = newCookies
+}
+
+const updateBody = (newBody) => {
+  bodyData.value = newBody
+}
+
 const handleSaveOrUpdateOrDebug = (type) => {
-  emit('saveOrUpdateOrDebug', type)
+  // 获取完整表单数据
+  const completeFormData = getData();
+  // 传递类型和完整数据给父组件
+  emit('saveOrUpdateOrDebug', type, completeFormData);
 }
 
 const updateContentType = (contentType) => {
@@ -104,38 +141,82 @@ const updateContentType = (contentType) => {
 }
 
 const setData = (data) => {
-  ApiInfoRef.value?.setData(data)
+  console.log('设置数据到EditApi:', data);
+  
+  // 保存原始请求参数数据以便后续调试
+  if (data) {
+    // 保存原始数据的深拷贝
+    const savedData = JSON.parse(JSON.stringify(data));
+    console.log('保存原始数据:', savedData);
+  }
+  
+  // 设置基本信息
+  ApiInfoRef.value?.setData(data);
 
   // 设置请求参数数据
   if (data.params) {
-    paramsData.value = data.params
+    console.log('设置params参数:', data.params);
+    paramsData.value = Array.isArray(data.params) ? [...data.params] : [];
+  } else {
+    paramsData.value = [];
   }
 
   // 处理 requestHeaders 对象转换为数组
   if (data.requestHeaders) {
-    const headersArray = []
+    console.log('设置requestHeaders:', data.requestHeaders);
+    const headersArray = [];
     for (const key in data.requestHeaders) {
       if (Object.hasOwnProperty.call(data.requestHeaders, key)) {
         headersArray.push({
           name: key,
           value: data.requestHeaders[key],
           description: ''
-        })
+        });
       }
     }
-    headersData.value = headersArray
+    headersData.value = headersArray;
+  } else {
+    headersData.value = [];
   }
 
+  // 设置cookies
   if (data.cookies) {
-    cookiesData.value = data.cookies
+    console.log('设置cookies:', data.cookies);
+    cookiesData.value = Array.isArray(data.cookies) ? [...data.cookies] : [];
+  } else {
+    cookiesData.value = [];
   }
 
+  // 设置请求体数据
   if (data.requestData) {
+    console.log('设置requestData:', data.requestData);
+    // 如果已有contentType，使用它，否则默认为application/json
+    const contentType = data.requestHeaders && 
+                        Object.keys(data.requestHeaders).some(key => key.toLowerCase() === 'content-type') 
+                        ? data.requestHeaders['Content-Type'] || data.requestHeaders['content-type'] 
+                        : 'application/json';
+    
+    bodyData.value = {
+      contentType: contentType,
+      content: typeof data.requestData === 'string' 
+        ? data.requestData 
+        : JSON.stringify(data.requestData, null, 2)
+    };
+  } else {
+    // 即使没有requestData，也要初始化为默认值
     bodyData.value = {
       contentType: 'application/json',
-      content: JSON.stringify(data.requestData, null, 2)
-    }
+      content: '{}'
+    };
   }
+  
+  // 确保所有数据已正确设置
+  console.log('设置后的数据状态:', {
+    params: paramsData.value,
+    headers: headersData.value,
+    body: bodyData.value,
+    cookies: cookiesData.value
+  });
 }
 
 const getData = () => {

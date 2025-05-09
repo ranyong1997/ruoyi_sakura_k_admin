@@ -73,18 +73,22 @@
       <el-table-column label="发布应用" align="center" prop="publishApp" :show-overflow-tooltip="true"/>
       <el-table-column label="简要描述" align="center" prop="simpleDesc" :show-overflow-tooltip="true"/>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
+                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
+      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
       <el-table-column label="更新时间" width="180" align="center" prop="updateTime"
                        :formatter="(row) => parseTime(row.updateTime)"
                        :show-overflow-tooltip="true"/>
-      <el-table-column label="更新人" width="center" align="center" prop="updateBy" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建时间" width="180" align="center" prop="createTime"
-                       :formatter="(row) => parseTime(row.createTime)" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建人" width="center" align="center" prop="createBy" :show-overflow-tooltip="true"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-tooltip content="修改" placement="top">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                        v-hasPermi="['auto:project:edit']"></el-button>
+          </el-tooltip>
+          <el-tooltip content="复制" placement="top">
+            <el-button link type="primary" icon="CopyDocument" @click="handleCopy(scope.row)"
+                       v-hasPermi="['auto:project:copy']"></el-button>
           </el-tooltip>
           <el-tooltip content="删除" placement="top">
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
@@ -161,7 +165,7 @@
 </template>
 
 <script setup name="Project">
-import {addProject, delProject, getProjectById, listProject, updateProject} from "@/api/project/project";
+import {addProject, delProject, getProjectById, listProject, updateProject,copyProjectById} from "@/api/project/project";
 
 const {proxy} = getCurrentInstance();
 const projectList = ref([]);
@@ -283,6 +287,23 @@ function handleUpdate(row) {
     form.value = response.data;
     open.value = true;
     title.value = "修改项目";
+  });
+}
+
+/** 复制按钮操作*/
+function handleCopy(row) {
+  reset();
+  const projectId = row.projectId || ids.value;
+  proxy.$modal.confirm('是否确认复制项目"' + row.projectName + '"?').then(function () {
+    loading.value = true;
+    return copyProjectById(projectId);
+  }).then(response => {
+    loading.value = false;
+    proxy.$modal.msgSuccess("复制成功");
+    getList();
+  }).catch(error => {
+    loading.value = false;
+    console.error("复制项目失败", error);
   });
 }
 

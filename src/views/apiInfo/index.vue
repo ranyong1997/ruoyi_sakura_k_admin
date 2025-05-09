@@ -168,6 +168,13 @@
           :show-overflow-tooltip="true"
       />
       <el-table-column
+          label="更新人"
+          width="center"
+          align="center"
+          prop="updateBy"
+          :show-overflow-tooltip="true"
+      />
+      <el-table-column
           label="更新时间"
           width="180"
           align="center"
@@ -176,24 +183,27 @@
           :show-overflow-tooltip="true"
       />
       <el-table-column
-          label="更新人"
-          width="center"
-          align="center"
-          prop="updateBy"
-          :show-overflow-tooltip="true"
-      />
-      <el-table-column
           label="最后执行状态"
           width="120"
           align="center"
-          prop="xxx"
+          prop="lastRunStatus"
           :show-overflow-tooltip="true"
-      />
+      >
+        <template #default="scope">
+          <dict-tag
+              v-if="scope.row.lastRunStatus !== null"
+              :options="sys_common_status"
+              :value="scope.row.lastRunStatus"
+          />
+          <span v-else>--</span>
+        </template>
+      </el-table-column>
       <el-table-column
           label="最后执行时间"
           width="180"
           align="center"
-          prop="xxx"
+          prop="lastRunTime"
+          :formatter="(row) => parseTime(row.lastRunTime)"
           :show-overflow-tooltip="true"
       />
       <el-table-column
@@ -222,15 +232,11 @@
                 v-hasPermi="['apitest:apiInfo:edit']"
             ></el-button>
           </el-tooltip>
-          <!--          <el-tooltip content="复制" placement="top">-->
-          <!--            <el-button-->
-          <!--                link-->
-          <!--                type="primary"-->
-          <!--                icon="Connection"-->
-          <!--                @click="handleUpdate(scope.row)"-->
-          <!--                v-hasPermi="['apitest:apiInfo:edit']"-->
-          <!--            ></el-button>-->
-          <!--          </el-tooltip>-->
+          <el-tooltip content="复制" placement="top">
+            <el-button link type="primary" icon="CopyDocument" @click="handleCopy(scope.row)"
+                       v-hasPermi="['apitest:apiInfo:copy']"
+            ></el-button>
+          </el-tooltip>
           <el-tooltip content="删除" placement="top">
             <el-button
                 link
@@ -263,17 +269,19 @@
 </template>
 
 <script setup name="Api">
-import {ref, getCurrentInstance, reactive, computed, nextTick} from 'vue'
+import {ref, getCurrentInstance, reactive, computed, nextTick, toRefs} from 'vue'
 import {
   delApi,
   getApiById,
   listApi,
   testApiById,
+  copyApiById
 } from "@/api/apiInfo/apiInfo";
 import EditApi from "./components/EditApi.vue";
+
 const {proxy} = getCurrentInstance();
 const editApiRef = ref(null);
-const {sys_normal_disable} = proxy.useDict("sys_normal_disable");
+const {sys_normal_disable, sys_common_status} = proxy.useDict("sys_normal_disable", "sys_common_status");
 const apiList = ref([]);
 const open = ref(false);
 const loading = ref(true);
@@ -313,6 +321,24 @@ const getTagLevel = computed(() => (level) => {
     case "P2":
       return "warning";
     case "P3":
+      return "info";
+  }
+});
+
+const getStatusTagType = computed(() => (status) => {
+  if (!status) return "";
+  switch (status.toUpperCase()) {
+    case "SUCCESS":
+      return "success";
+    case "FAILED":
+      return "danger";
+    case "ERROR":
+      return "danger";
+    case "PENDING":
+      return "info";
+    case "RUNNING":
+      return "warning";
+    default:
       return "info";
   }
 });
@@ -404,6 +430,7 @@ const emit = defineEmits(['saveOrUpdateOrDebug'])
 
 /** 表单重置 */
 function reset() {
+  // 只重置基本字段，保留复杂对象的结构
   form.value = {
     apiId: undefined,
     apiName: undefined,
@@ -412,10 +439,15 @@ function reset() {
     apiUrl: undefined,
     apiStatus: undefined,
     apiLevel: undefined,
-    apiTags: undefined,
-    requestDataType: undefined,
-    requestData: undefined,
-    requestHeaders: undefined,
+    apiTags: [],
+
+    // 重要：保留这些复杂数据的结构而不是设置为undefined
+    requestDataType: "0",
+    requestData: {},
+    requestHeaders: {},
+    params: [],
+    cookies: [],
+
     remark: undefined,
     createBy: undefined,
     createTime: undefined,
@@ -478,7 +510,7 @@ function handleDebug(row) {
   getApiById(apiId).then((response) => {
     form.value = response.data;
     open.value = true;
-    title.value = "待开发";
+    title.value = "运行接口";
     nextTick(() => {
       if (editApiRef.value) {
         editApiRef.value.setData(form.value);
@@ -489,19 +521,46 @@ function handleDebug(row) {
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
-  reset();
+  // 不急于重置表单，可能导致数据丢失
+  // reset(); 
+
   const apiId = row.apiId || ids.value;
   getApiById(apiId).then((response) => {
-    form.value = response.data;
-    console.log("0----->",form.value)
-    open.value = true;
-    title.value = "修改接口";
-    // 确保在下一个 tick 中设置数据
-    nextTick(() => {
-      if (editApiRef.value) {
-        editApiRef.value.setData(form.value);
-      }
-    });
+    if (response.code === 200 && response.data) {
+      // 获取成功后，再重置表单并填充新数据
+      reset();
+
+      // 确保复杂对象的结构完整
+      const apiData = {
+        ...response.data,
+        requestData: response.data.requestData || {},
+        requestHeaders: response.data.requestHeaders || {},
+        params: response.data.params || [],
+        cookies: response.data.cookies || []
+      };
+
+      // 打印原始数据以便调试
+      console.log("从服务器获取的原始数据:", apiData);
+
+      // 为表单赋值
+      form.value = apiData;
+
+      // 打开抽屉并设置标题
+      open.value = true;
+      title.value = "修改接口";
+
+      // 确保在下一个 tick 中设置数据到子组件
+      nextTick(() => {
+        if (editApiRef.value) {
+          editApiRef.value.setData(form.value);
+        }
+      });
+    } else {
+      proxy.$modal.msgError(response.msg || "获取接口数据失败");
+    }
+  }).catch(error => {
+    console.error("获取接口数据错误:", error);
+    proxy.$modal.msgError("获取接口数据出错");
   });
 }
 
@@ -509,24 +568,65 @@ function handleUpdate(row) {
 const handleSaveOrUpdateOrDebug = async (type, formData) => {
   if (type === 'save') {
     try {
+      // 收到保存成功的消息，刷新列表
       getList();
+      // 关闭抽屉
+      open.value = false;
     } catch (error) {
       console.error('Save/Update Error:', error);
       proxy.$modal.msgError("操作失败：" + (error.message || '未知错误'));
     }
   } else if (type === 'debug') {
     try {
-      const currentFormData = formData || form.value;
-      if (currentFormData.apiId) {
-        await testApiById(currentFormData.apiId);
-        proxy.$modal.msgSuccess("执行成功");
+      console.log('接收到调试结果:', formData);
+      // 更新当前选中接口的执行状态和时间
+      if (formData && formData.apiId) {
+        // 找到当前接口在列表中的位置
+        const index = apiList.value.findIndex(item => item.apiId === formData.apiId);
+        if (index !== -1) {
+          // 更新最后执行状态和时间以及其他关键字段
+          apiList.value[index].lastRunStatus = formData.lastRunStatus || '0';
+          apiList.value[index].lastRunTime = formData.lastRunTime || new Date().toISOString();
+
+          // 同步更新其他可能已修改的字段
+          apiList.value[index].apiName = formData.apiName || apiList.value[index].apiName;
+          apiList.value[index].apiUrl = formData.apiUrl || apiList.value[index].apiUrl;
+          apiList.value[index].apiMethod = formData.apiMethod || apiList.value[index].apiMethod;
+          apiList.value[index].apiLevel = formData.apiLevel || apiList.value[index].apiLevel;
+          apiList.value[index].apiStatus = formData.apiStatus || apiList.value[index].apiStatus;
+
+          console.log('已更新接口状态:', apiList.value[index].apiId,
+              '状态:', apiList.value[index].lastRunStatus,
+              '时间:', apiList.value[index].lastRunTime);
+        } else {
+          console.warn('未找到对应的接口:', formData.apiId);
+        }
       }
+
+      console.log('调试成功，已更新接口执行状态');
     } catch (error) {
       console.error('Debug Error:', error);
       proxy.$modal.msgError("测试失败：" + (error.message || '未知错误'));
     }
   }
 };
+
+/** 复制按钮操作 */
+function handleCopy(row) {
+  reset();
+  const apiId = row.apiId || ids.value;
+  proxy.$modal.confirm('是否确认复制接口"' + row.apiName + '"?').then(function () {
+    loading.value = true;
+    return copyApiById(apiId);
+  }).then(response => {
+    loading.value = false;
+    proxy.$modal.msgSuccess("复制成功");
+    getList();
+  }).catch(error => {
+    loading.value = false;
+    console.error("复制接口失败", error);
+  });
+}
 
 /** 删除按钮操作 */
 function handleDelete(row) {
