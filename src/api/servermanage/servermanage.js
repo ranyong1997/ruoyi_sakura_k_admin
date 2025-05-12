@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const baseurl = '/servermanage/'
+const baseurl = '/servermanage'
 
 // 查询服务器列表
 export function listSsh(query) {
@@ -56,7 +56,7 @@ export function copySshById(sshId) {
     })
 }
 
-// 根据 ID 测试连接机器人
+// 根据 ID 测试连接服务器
 export function testSshById(sshId) {
     return request({
         url: baseurl + '/' + sshId,
