@@ -792,40 +792,108 @@ defineExpose({
 
 <style lang="scss" scoped>
 .api-case {
-  padding: 15px 16px;
+  padding: 20px;
   background-color: #ffffff;
   border-radius: 10px;
   border-left: 5px solid #409eff;
   margin-bottom: 20px;
-  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 
-  .api-case__url_info {
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .api-case__method {
+    margin-right: 10px;
+  }
+
+  .api-case__operation {
     display: flex;
-    margin-bottom: 20px;
+    gap: 12px;
+    padding-left: 12px;
+
+    .el-button {
+      padding: 9px 20px;
+      font-weight: 500;
+      transition: all 0.3s;
+      border-radius: 5px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+
+  .api-case__detail {
+    padding-top: 15px;
+    
+    .el-form-item__label {
+      font-weight: 500;
+      font-size: 14px;
+    }
   }
 
   :deep(.input-with-select .el-input-group__prepend) {
     background-color: var(--el-fill-color-blank);
   }
+  
+  :deep(.el-tag) {
+    margin: 0 8px 8px 0;
+    padding: 0 8px;
+    border-radius: 4px;
+  }
+  
+  :deep(.el-select .el-input__inner) {
+    font-weight: 500;
+  }
 }
 
+// 方法颜色样式优化
 .method-color-get {
-  color: #61affe
+  color: #61affe;
+  font-weight: 600;
 }
 
 .method-color-post {
-  color: #49cc90
+  color: #49cc90;
+  font-weight: 600;
 }
 
 .method-color-delete {
-  color: #f93e3d
+  color: #f93e3d;
+  font-weight: 600;
 }
 
 .method-color-put {
-  color: #fca130
+  color: #fca130;
+  font-weight: 600;
 }
 
 .method-color-na {
-  color: #f56c6c
+  color: #f56c6c;
+  font-weight: 600;
+}
+
+// 优先级颜色
+.method-color-p0 {
+  color: #f93e3d;
+  font-weight: 600;
+}
+
+.method-color-p1 {
+  color: #fca130;
+  font-weight: 600;
+}
+
+.method-color-p2 {
+  color: #61affe;
+  font-weight: 600;
+}
+
+.method-color-p3 {
+  color: #49cc90;
+  font-weight: 600;
 }
 </style>

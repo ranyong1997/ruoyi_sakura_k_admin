@@ -1,11 +1,18 @@
 <template>
-  <router-view/>
+  <div id="app">
+    <router-view />
+    <stagewise v-if="isDev" />
+  </div>
 </template>
 
 <script setup>
 import useSettingsStore from '@/store/modules/settings'
 import {handleThemeStyle} from '@/utils/theme'
 import {addWatermark} from '@/utils/wager_mark'
+import Stagewise from '@/components/Stagewise'
+import { onMounted, nextTick, ref } from 'vue'
+
+const isDev = process.env.NODE_ENV === 'development'
 
 onMounted(() => {
   nextTick(() => {
